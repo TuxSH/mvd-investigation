@@ -4,7 +4,7 @@
 
 This pass analyzed the supplied `mvd.i64` through IDA MCP and compared it with the local Hantro G1 and libctru trees identified in [external-code.md](external-code.md). The database has 797 functions. Its initial metadata described a GDB remote process, with no original executable checksum or identified firmware version. Existing useful SDK/service names were retained.
 
-The original database was copied to `/tmp/mvd-re/mvd.before.i64` before edits. That is a temporary recovery copy, not a tracked project artifact. The edited database is saved in place as `mvd.i64`. IDA's loose working files belong to the active database session and were not deleted. No executable instructions were patched, and no changes were made to either reference source tree.
+The first pass recorded a temporary recovery copy at `/tmp/mvd-re/mvd.before.i64`. It was not a tracked project artifact and was no longer present when the latest codec pass began. The latest pass started from the repository’s saved database. The edited database is saved in place as `mvd.i64`. IDA's loose working files belong to the active database session and were not deleted. No executable instructions were patched, and no changes were made to either reference source tree.
 
 ## Analysis sequence
 
@@ -40,7 +40,7 @@ The documentation was checked for complete command coverage, internal links and 
 * Exact firmware/build identity and upstream Hantro release
 * Whether a live console corresponding to this database matches the supplied GBATEK register reference; the conditional feature matrix is now decoded in hardware.md
 * Runtime H.264 profile/bit-depth support, particularly the wiki's High10 claims; the SPS parser reads and discards depth fields
-* The unused capability word and extra byte in VP6/VP8 info; H.264 access-unit-boundary storage, a storage extension word and opaque macroblock/slice substructures; VP8 parser/concealment extension words
+* The unused capability word and extra byte in VP6/VP8 info; the H.264 storage extension word at `0x39DC` and the origin of its frame-number workaround mask. Access-unit, macroblock, slice-command and VP8 parser/concealment regions are now recovered in the codec leaf pass
 * L2B pixel-format ordering and hardware conversion details beyond the recovered register writes and DMA interface
 * Exact origin of every runtime/SDK/internal decoder routine; many functions outside the exposed API and traced helpers remain unnamed
 * Some Hex-Rays artifacts: overlapping packed work-size locals and aliases inside the output mapping array; those were not hidden by inventing a cleaner but unsupported layout
@@ -54,3 +54,15 @@ The continuation analyzed PP scaling and shared PP interfaces, then H.264/VP6/VP
 Register call sites resolved 24 branch-specific fields plus the previously isolated source IRQ bit: 723 names total, seven unresolved. Codec instance, buffer, interface and parser sizes were read back after typing. DWL/platform analysis came last, covering filtered MMIO writes, caller-work-buffer allocation, no-op frees, status/event waits and PP cache flush. Disassembly was used for preserved argument registers, timeout conversion, the address-helper OR condition and syscall identities. Eighteen more platform-local names and four global names were applied.
 
 Important continuation sizes: linear descriptor 12, H.264/VP6/VP8 containers 15860/2424/4224, H.264 DPB 1680, VP6 parser 1480, VP8 parser 2612, VP8 ASIC state 812, reference-buffer controller 228, shared decoder-to-PP interface 104, fuse status 76. All 316 inventory names were checked against their database addresses. The decompiler cache was invalidated for all 797 functions; fresh pseudocode confirmed the register-preservation corrections in the MMIO writer and PP cache helper, and propagated stack types in PP initialization and capability decoding. Interior-pointer aliases and the packed-local artifacts noted above remain. No firmware instructions, MMIO contents or reference-source files were changed.
+
+## Codec leaf pass
+
+The next pass kept service/hardware unknowns and platform glue last, as requested. It added 105 names/prototypes, bringing the inventory to 421. Six are descriptive VP8 concealment names; the remaining additions have source counterparts, with ABI/layout differences recorded in [codec-leaf-analysis.md](codec-leaf-analysis.md). Seventy-two additional local-variable renames were applied across the custom VP8 concealment code. Source-matched routines retain upstream terminology.
+
+H.264 access-unit state, macroblock state/payload and nested slice commands were recovered from consumers and source layouts. The additional AUB frame-number word was retained, not collapsed into the 72-byte reference structure. VP8 parser/concealment state and VP6 Huffman structures were typed. Read-back sizes were AUB 76, reordering 276, marking 716, macroblock layer/storage 1124/160, slice header 1364, VP8 accumulator/state 36/16 and VP6 Huffman workspace 4544. Parent sizes remained unchanged: H.264 storage/container 14864/15860, VP8 parser/container 2612/4224 and VP6 parser 1480.
+
+Disassembly was used only for ambiguous signed motion-vector extraction, fractional-neighbor conditions, misleading null-pointer pseudocode and a missing lower-left boundary guard. The collector's eight-word histogram remains split in Hex-Rays despite attempted local typing; names/comments record the correct span. A temporary stack-argument rename during this attempt was restored to `mbX`. No analysis result relies on an unaccepted type edit.
+
+Register field 579 now has an observed normal/concealment interpretation, bringing the enum and register inventory to 724 names. Its other two encodings remain unknown; six other fields remain unnamed. Equal triples for ordinals 19/20 and 281/282 were not treated as proof of equal semantics.
+
+All 421 inventory names and important type layouts were read back from IDA. Four PP callback names had become generic callback labels during type propagation; their documented names were restored and checked. The decompiler cache was refreshed for all 797 functions, documentation links/counts checked and the database saved. There are still 346 `sub_*` function names; this differs from the inventory remainder because the database also contains useful names retained from before this investigation. No decoder execution or fuzzing was needed for the source attribution and layout changes. Hardware behavior and the newly documented conditional boundary defect remain statically analyzed observations.

@@ -22,7 +22,7 @@ Several independent fingerprints agree:
 | `0x109628` | `source/vp6/vp6hwd_api.c: VP6DecInit` | Same DWL client 7, reference count clamped to 3..16, concealment and tiled-reference handling |
 | `0x110EA0` | `source/vp8/vp8decapi.c: VP8DecInit` | Same VP7/VP8/WebP selector, DWL client 10, buffer minima 3/4/1 and mode-specific branches |
 | `0x10F324`, `0x10E0FC` | `source/common/regdrv.c: SetDecRegister`, `GetDecRegister` | Identical table-driven word/width/shift insertion and extraction algorithm |
-| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 24 call-site-derived names, retaining seven uncertainties |
+| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 25 call-site-derived names, retaining six unnamed entries |
 
 Together these establish Hantro software ancestry at function and data-layout level. A generic Hantro-compatible register map alone would not establish that ancestry.
 
@@ -39,6 +39,8 @@ Together these establish Hantro software ancestry at function and data-layout le
 
 * MVD linear memory descriptors are 12 bytes; the Linux `uid` word is absent. H.264 DPB is 1680 bytes, and decoder-to-PP interface is 104 bytes with two extra stride words. Internal container allocations are H.264 15860, VP6 2424 and VP8 4224 bytes.
 * VP8 adds separate chroma buffers, stride controls and hardware-concealment state; the tiled-reference helper adds a DPB-mode argument. See [decoder-internals.md](decoder-internals.md).
+
+* MVD access-unit-boundary state is 76 bytes, with an extra masked previous frame number. VP8 adds coefficient-probability progress and a fully recovered concealment tail. Six concealment helpers have descriptive names because no exact counterpart was found in the local revision; this is not an attribution of authorship. VP6’s 4544-byte Huffman workspace is source-matched. See [codec-leaf-analysis.md](codec-leaf-analysis.md).
 
 These differences indicate a related Hantro branch, not a byte-identical build of the provided source revision. The exact upstream release and Nintendo's patch history are not established.
 

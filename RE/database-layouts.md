@@ -283,7 +283,13 @@ The continuation layouts below are described in [decoder-internals.md](decoder-i
 | `0x104c` | `tiledReferenceEnable` | `u32` | 4 |
 | `0x1050` | `hardwareEcSupport` | `u32` | 4 |
 | `0x1054` | `strideSupport` | `u32` | 4 |
-| `0x1058` | `unresolvedTail` | `u8[40]` | 40 |
+| `0x1058` | `concealmentActive` | `u32` | 4 |
+| `0x105c` | `concealStartMbX` | `u32` | 4 |
+| `0x1060` | `concealStartMbY` | `u32` | 4 |
+| `0x1064` | `previousKeyFrame` | `u32` | 4 |
+| `0x1068` | `forceFreezeUntilKeyFrame` | `u32` | 4 |
+| `0x106c` | `entropyRefreshSeen` | `u32` | 4 |
+| `0x1070` | `concealment` | `MvdVp8EcState` | 16 |
 
 ## MvdH264Dpb (1680 bytes)
 
@@ -329,7 +335,7 @@ The continuation layouts below are described in [decoder-internals.md](decoder-i
 | `0x0` | `strm` | `MvdVp6Stream` | 24 |
 | `0x18` | `br` | `MvdBoolCoder` | 36 |
 | `0x3c` | `br2` | `MvdBoolCoder` | 36 |
-| `0x60` | `huff` | `void *` | 4 |
+| `0x60` | `huff` | `MvdVp6Huffman *` | 4 |
 | `0x64` | `Vp3VersionNo` | `u8` | 1 |
 | `0x65` | `VpProfile` | `u8` | 1 |
 | `0x66` | `FrameType` | `u8` | 1 |
@@ -418,3 +424,206 @@ The continuation layouts below are described in [decoder-internals.md](decoder-i
 | `0x2ac` | `userChroma` | `u32 *[16]` | 64 |
 | `0x2ec` | `userChromaBus` | `u32[16]` | 64 |
 
+
+## Codec leaf layouts
+
+The following layouts were read back from IDA after source/consumer analysis; their behavior and branch differences are described in [codec-leaf-analysis.md](codec-leaf-analysis.md). Offsets are relative to each named structure.
+
+### MvdH264Aub (76 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `nuPrev` | `MvdH264Nal` | 32 |
+| `0x20` | `prevFrameNum` | `u32` | 4 |
+| `0x24` | `maskedPrevFrameNum` | `u32` | 4 |
+| `0x28` | `prevIdrPicId` | `u32` | 4 |
+| `0x2c` | `prevPicOrderCntLsb` | `u32` | 4 |
+| `0x30` | `prevDeltaPicOrderCntBottom` | `s32` | 4 |
+| `0x34` | `prevDeltaPicOrderCnt` | `s32[2]` | 8 |
+| `0x3c` | `prevFieldPicFlag` | `u32` | 4 |
+| `0x40` | `prevBottomFieldFlag` | `u32` | 4 |
+| `0x44` | `firstCallFlag` | `u32` | 4 |
+| `0x48` | `newPicture` | `u32` | 4 |
+
+### MvdH264RefReorderOp (16 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `reorderingOfPicNumsIdc` | `u32` | 4 |
+| `0x4` | `absDiffPicNum` | `u32` | 4 |
+| `0x8` | `longTermPicNum` | `u32` | 4 |
+| `0xc` | `absDiffViewIdx` | `u32` | 4 |
+
+### MvdH264RefReordering (276 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `refPicListReorderingFlagL0` | `u32` | 4 |
+| `0x4` | `command` | `MvdH264RefReorderOp[17]` | 272 |
+
+### MvdH264Mmco (20 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `memoryManagementControlOperation` | `u32` | 4 |
+| `0x4` | `differenceOfPicNums` | `u32` | 4 |
+| `0x8` | `longTermPicNum` | `u32` | 4 |
+| `0xc` | `longTermFrameIdx` | `u32` | 4 |
+| `0x10` | `maxLongTermFrameIdx` | `u32` | 4 |
+
+### MvdH264RefMarking (716 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `strmLen` | `u32` | 4 |
+| `0x4` | `noOutputOfPriorPicsFlag` | `u32` | 4 |
+| `0x8` | `longTermReferenceFlag` | `u32` | 4 |
+| `0xc` | `adaptiveRefPicMarkingModeFlag` | `u32` | 4 |
+| `0x10` | `operation` | `MvdH264Mmco[35]` | 700 |
+
+### MvdH264MbPred (132 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `prevIntra4x4PredModeFlag` | `u32[16]` | 64 |
+| `0x40` | `remIntra4x4PredMode` | `u32[16]` | 64 |
+| `0x80` | `intraChromaPredMode` | `u32` | 4 |
+
+### MvdH264Residual (964 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `rlc` | `unsigned __int16[468]` | 936 |
+| `0x3a8` | `totalCoeff` | `u8[28]` | 28 |
+
+### MvdH264MbLayer (1124 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `filterOffsetA` | `s32` | 4 |
+| `0x4` | `filterOffsetB` | `s32` | 4 |
+| `0x8` | `disableDeblockingFilterIdc` | `u32` | 4 |
+| `0xc` | `mbType` | `u8` | 1 |
+| `0xd` | `padding` | `u8[3]` | 3 |
+| `0x10` | `codedBlockPattern` | `u32` | 4 |
+| `0x14` | `mbQpDelta` | `s32` | 4 |
+| `0x18` | `mbPred` | `MvdH264MbPred` | 132 |
+| `0x9c` | `subMbType` | `u8[4]` | 4 |
+| `0xa0` | `residual` | `MvdH264Residual` | 964 |
+
+### MvdH264MbStorage (160 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `mbType` | `u8` | 1 |
+| `0x1` | `mbType_asic` | `u8` | 1 |
+| `0x2` | `padding` | `u8[2]` | 2 |
+| `0x4` | `sliceId` | `u32` | 4 |
+| `0x8` | `qpY` | `u32` | 4 |
+| `0xc` | `totalCoeff` | `u8[24]` | 24 |
+| `0x24` | `intra4x4PredMode` | `u8[16]` | 16 |
+| `0x34` | `intra4x4PredMode_asic` | `u8[16]` | 16 |
+| `0x44` | `refIdxL0` | `u8[4]` | 4 |
+| `0x48` | `refID` | `u8[4]` | 4 |
+| `0x4c` | `mv` | `MvdH264Mv[16]` | 64 |
+| `0x8c` | `decoded` | `u32` | 4 |
+| `0x90` | `mbA` | `struct MvdH264MbStorage *` | 4 |
+| `0x94` | `mbB` | `struct MvdH264MbStorage *` | 4 |
+| `0x98` | `mbC` | `struct MvdH264MbStorage *` | 4 |
+| `0x9c` | `mbD` | `struct MvdH264MbStorage *` | 4 |
+
+### MvdH264SliceHeader (1364 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `firstMbInSlice` | `u32` | 4 |
+| `0x4` | `sliceType` | `u32` | 4 |
+| `0x8` | `picParameterSetId` | `u32` | 4 |
+| `0xc` | `frameNum` | `u32` | 4 |
+| `0x10` | `idrPicId` | `u32` | 4 |
+| `0x14` | `pocLength` | `u32` | 4 |
+| `0x18` | `pocLengthHw` | `u32` | 4 |
+| `0x1c` | `picOrderCntLsb` | `u32` | 4 |
+| `0x20` | `deltaPicOrderCntBottom` | `s32` | 4 |
+| `0x24` | `deltaPicOrderCnt` | `s32[2]` | 8 |
+| `0x2c` | `redundantPicCnt` | `u32` | 4 |
+| `0x30` | `numRefIdxActiveOverrideFlag` | `u32` | 4 |
+| `0x34` | `numRefIdxL0Active` | `u32` | 4 |
+| `0x38` | `numRefIdxL1Active` | `u32` | 4 |
+| `0x3c` | `sliceQpDelta` | `s32` | 4 |
+| `0x40` | `disableDeblockingFilterIdc` | `u32` | 4 |
+| `0x44` | `sliceAlphaC0Offset` | `s32` | 4 |
+| `0x48` | `sliceBetaOffset` | `s32` | 4 |
+| `0x4c` | `sliceGroupChangeCycle` | `u32` | 4 |
+| `0x50` | `refPicListReordering` | `MvdH264RefReordering` | 276 |
+| `0x164` | `refPicListReorderingL1` | `MvdH264RefReordering` | 276 |
+| `0x278` | `decRefPicMarking` | `MvdH264RefMarking` | 716 |
+| `0x544` | `cabacInitIdc` | `u32` | 4 |
+| `0x548` | `fieldPicFlag` | `u32` | 4 |
+| `0x54c` | `bottomFieldFlag` | `u32` | 4 |
+| `0x550` | `directSpatialMvPredFlag` | `u32` | 4 |
+
+### MvdVp8Mv (8 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `x` | `s32` | 4 |
+| `0x4` | `y` | `s32` | 4 |
+
+### MvdVp8EcAccumulator (36 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `weight` | `u32[3]` | 12 |
+| `0xc` | `weightedVector` | `MvdVp8Mv[3]` | 24 |
+
+### MvdVp8EcState (16 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `accumulators` | `MvdVp8EcAccumulator *` | 4 |
+| `0x4` | `widthInMbs` | `u32` | 4 |
+| `0x8` | `heightInMbs` | `u32` | 4 |
+| `0xc` | `vectorsPerMb` | `u32` | 4 |
+
+### MvdVp6HuffNode (4 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `left` | `MvdVp6TokenOrPtr` | 2 |
+| `0x2` | `right` | `MvdVp6TokenOrPtr` | 2 |
+
+### MvdVp6SortNode (12 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `next` | `s32` | 4 |
+| `0x4` | `freq` | `u32` | 4 |
+| `0x8` | `token` | `MvdVp6TokenOrPtr` | 2 |
+| `0xa` | `padding` | `unsigned __int16` | 2 |
+
+### MvdVp6Huffman (4544 bytes)
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `DcHuffProbs` | `u32[2][12]` | 96 |
+| `0x60` | `DcHuffTree` | `MvdVp6HuffNode[2][12]` | 96 |
+| `0xc0` | `AcHuffProbs` | `u32[3][2][6][12]` | 1728 |
+| `0x780` | `AcHuffTree` | `MvdVp6HuffNode[3][2][6][12]` | 1728 |
+| `0xe40` | `ZeroHuffProbs` | `u32[2][14]` | 112 |
+| `0xeb0` | `ZeroHuffTree` | `MvdVp6HuffNode[2][14]` | 112 |
+| `0xf20` | `DcHuffLUT` | `unsigned __int16[2][12]` | 48 |
+| `0xf50` | `AcHuffLUT` | `unsigned __int16[2][3][4][12]` | 576 |
+| `0x1190` | `ZeroHuffLUT` | `unsigned __int16[2][12]` | 48 |
+
+`MvdVp6TokenOrPtr` is two bytes: selector at bit 0, seven-bit value at bits 7:1, and eight padding bits. `MvdH264Mv` is two signed 16-bit components, four bytes total.
+
+### Replaced fields in existing parent structures
+
+| Structure | Offset | Member | Type | Bytes |
+|---|---|---|---|---:|
+| `MvdH264Storage` | `0x4cc` | `mb` | `MvdH264MbStorage *` | 4 |
+| `MvdH264Storage` | `0x1f50` | `aub` | `MvdH264Aub` | 76 |
+| `MvdH264Storage` | `0x3548` | `mbLayer` | `MvdH264MbLayer` | 1124 |
+| `MvdH264Storage` | `0x39dc` | `unresolvedWord3703` | `u32` | 4 |
+| `MvdVp8Decoder` | `0xa30` | `coeffProbsDecoded` | `u32` | 4 |

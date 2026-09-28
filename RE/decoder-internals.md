@@ -31,7 +31,7 @@ The local `DWLLinearMem_t` includes a fourth `uid` word, which MVD does not have
 
 Short enums also matter: each H.264 DPB picture has two one-byte status values at offsets 24 and 25; PP status and multibuffer status occupy bytes 0 and 1 of the shared interface. Padding is explicit where required by the observed offsets.
 
-The recovered H.264 storage includes typed SPS/PPS pointers, four DPBs, two picture-order states, current image, previous NAL header, four slice headers, stream state and output/concealment bookkeeping. The access-unit-boundary region, macroblock-layer payload, nested slice-reference commands and one additional storage word remain opaque. VP8 likewise retains an unexplained parser-tail word and a 40-byte concealment tail. Their offsets are preserved; the type names do not imply those regions are fully understood.
+The recovered H.264 storage includes typed SPS/PPS pointers, four DPBs, two picture-order states, current image, previous NAL header, four slice headers, stream state and output/concealment bookkeeping. The access-unit-boundary region, macroblock-layer payload and nested slice-reference commands are now typed; one additional storage word at `0x39DC` remains unresolved. VP8’s parser-tail word is `coeffProbsDecoded`, and its 40-byte tail now describes concealment/recovery state. See [codec-leaf-analysis.md](codec-leaf-analysis.md) for the evidence, branch differences and remaining limits.
 
 ## Decoder-to-PP contract
 
@@ -92,10 +92,10 @@ The last opaque PP scaling block is now named: fast-scaling support, horizontal/
 
 New source matches include framebuffer clipping, dithering selection, custom RGB masks, RGB transform coefficients, scaling setup and width/height validation. The coefficient-rounding workaround and the reference hardware's capabilities are detailed in [hardware.md](hardware.md).
 
-Twenty-four additional register semantics were recovered from their callers, using an `MVD_HWIF_` prefix. Another source name, `HWIF_DEC_IRQ`, was confirmed from its exact triple and IRQ-clear callers. Together with the original 698 transfers, 723 of 730 entries now have names. The seven remaining ordinals are 8, 10, 19, 128, 282, 579 and 598. Field 579 participates in VP8 error-concealment startup, but its complete two-bit encoding is not established.
+Twenty-five additional register semantics have been recovered from callers, using an `MVD_HWIF_` prefix. Another source name, `HWIF_DEC_IRQ`, was confirmed from its exact triple and IRQ-clear callers. Together with the original 698 transfers, 724 of 730 entries now have names. The six remaining ordinals are 8, 10, 19, 128, 282 and 598. Field 579 is now `MVD_HWIF_VP8_CONCEALMENT_MODE`: zero for ordinary decoding, one for the generated-motion-vector concealment path; encodings 2 and 3 remain unresolved.
 
 ## Remaining work
 
-Many leaf routines in entropy decoding, macroblock reconstruction, DPB management and SDK/runtime support still lack individual source attribution. H.264 access-unit-boundary storage and the opaque regions listed above need additional recovery. The function inventory is an evidence-based progress record, not a claim that all 797 functions have been identified.
+The [codec leaf pass](codec-leaf-analysis.md) extends attribution through entropy decoding and macroblock/RLC preparation. Deeper H.264 DPB output/marking, intra/inter prediction leaves, neighbor helpers and SDK/runtime support still need individual attribution. The H.264 storage extension word and workaround-mask origin remain open. The 421-function inventory is an evidence-based progress record, not a claim that all 797 functions have been identified.
 
 The continued platform findings are in [platform-glue.md](platform-glue.md). No decoder was executed and no live MMIO state was changed.

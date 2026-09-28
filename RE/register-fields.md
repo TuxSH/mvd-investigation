@@ -1,6 +1,6 @@
 # Register-field inventory
 
-This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 24 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (seven entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
+This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 25 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (six entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
 
 | Ordinal | Assigned name | Register word | Bank byte offset | Width | Shift |
 |---:|---|---:|---|---:|---:|
@@ -583,7 +583,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | 576 | `HWIF_QUANT_5` | 47 | `0x0BC` | 11 | 0 |
 | 577 | `HWIF_STARTMB_X` | 48 | `0x0C0` | 9 | 23 |
 | 578 | `MVD_HWIF_STARTMB_Y` | 48 | `0x0C0` | 9 | 14 |
-| 579 | — | 48 | `0x0C0` | 2 | 12 |
+| 579 | `MVD_HWIF_VP8_CONCEALMENT_MODE` | 48 | `0x0C0` | 2 | 12 |
 | 580 | `HWIF_PRED_BC_TAP_0_0` | 49 | `0x0C4` | 10 | 22 |
 | 581 | `HWIF_PRED_BC_TAP_0_1` | 49 | `0x0C4` | 10 | 12 |
 | 582 | `HWIF_PRED_BC_TAP_0_2` | 49 | `0x0C4` | 10 | 2 |
@@ -747,9 +747,21 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | 283, 284 | `VP8HwdAsicInitPicture`: stride enable and separate-chroma enable respectively |
 | 301, 302 | `VP8HwdAsicAllocatePictures`: encoded luma/chroma stride values |
 | 578 | `VP8HwdAsicInitPicture` and decode-error path: vertical start macroblock, paired with `HWIF_STARTMB_X` |
+| 579 | `VP8HwdAsicInitPicture`: 0 for ordinary decoding, 1 when `concealmentActive` selects generated motion vectors; two-bit values 2/3 unknown |
 | 639, 643 | `PPSetupHW`: output height/width shifted right by eleven |
 | 685–688, 696–699 | `PPSetupHW`: mask start/end X/Y coordinates shifted right by eleven |
 | 708, 720–722 | `PPSetFrmBufferWriting`: high bits of down/right/left/up framebuffer crossing respectively |
 | 723 | `PPSetFrmBufferWriting`: framebuffer/display width; 13 bits in MVD versus 12 in source |
 
-The remaining ordinals are 8, 10, 19, 128, 282, 579 and 598. Field 579 is involved in VP8 error-concealment start control; its full encoding remains unresolved.
+The remaining unnamed ordinals are 8, 10, 19, 128, 282 and 598:
+
+| Ordinal | Limitation |
+|---|---|
+| 8 | Word 1 bit 11; no supported semantic assignment |
+| 10 | Word 1 bit 5; no supported semantic assignment |
+| 19 | Same triple as ordinal 20 (`HWIF_DEC_DATA_DISC_E`), but an alias need not have the same codec-specific meaning |
+| 128 | Word 7 bit 13, in a VC1-related sequence; surrounding field names do not establish this bit's meaning |
+| 282 | Same full-word triple as ordinal 281 (`HWIF_REFER6_BASE`), next to VP8 stride/chroma controls; duplicate address does not justify copying the reference-buffer name |
+| 598 | Word 58 bit 31; the supplied reference dump reports zero at this word, which does not identify the bit |
+
+Field 579 has a supported descriptive name but only a partial encoding map. No live register experiment was used to resolve these fields.
