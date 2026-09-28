@@ -59,3 +59,7 @@ The [DPB/prediction pass](h264-dpb-prediction.md) identifies 49 further source c
 ## Parser/support attribution
 
 The [parser/support pass](parser-support.md) adds VUI/HRD, POC, scaling and slice-group helpers, PP/refbuffer support and remaining small codec accessors. The 952-byte VUI and 412-byte HRD layouts match the reference; six scaling/scan tables match all 960 bytes. The previously mislabeled `0x114B8E` is corrected to `h264GetSarInfo`; `h264bsdSarSize` is at `0x1189C0`. Two extracted register-setup helpers retain descriptive `Mvd` names because the reference embeds their behavior within larger initializers/callbacks.
+
+## Constant-data attribution
+
+The [codec-data pass](codec-data.md) matches 69 complete literal arrays, including seven already named, and five H.264 register-selector arrays after translating source enum names to MVD ordinals. This adds 67 named/typed arrays covering 14,586 bytes. CABAC/CAVLC, VP6 filtering/probabilities, VP8 quantizers/probabilities and common reference-buffer costs provide further independent evidence of shared source. Identical byte patterns were disambiguated by consumers; compiler-emitted copies of local initializers receive descriptive names. Nonmatches and scan limits are recorded rather than treated as evidence of absent features.

@@ -5,7 +5,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 ## Main findings
 
 * The module contains Hantro decoder-library code, not merely a custom driver for compatible hardware. The H.264, VP6, VP8/WebP and postprocessor API implementations have identifiable counterparts in the supplied `hlibg1v6` source tree.
-* The current inventory contains 501 applied function names/prototypes. The latest pass recovers H.264 VUI/HRD, picture-order and parser support, corrects an earlier SAR helper attribution, and identifies more PP/reference-buffer helpers; 725 of 730 register fields are named.
+* The current inventory contains 501 applied function names/prototypes, and 725 of 730 register fields are named. The latest pass adds 67 constant-table names/types, confirms the CABAC/POC/scaling buffer layout, and corrects misleading VP8 stack-storage typing. The preceding parser pass recovered VUI/HRD and corrected an earlier SAR helper attribution.
 * All 33 `mvd:STD` commands can be assigned functional roles. The previously unclear command groups are H.264, VP8/VP7/WebP, VP6, and postprocessor operations.
 * The service's 284-byte configuration is Hantro `PPConfig`. Its previously unknown areas contain RGB controls, masks, range mapping, rotation and deinterlacing settings.
 * `0x00020001` in this configuration means **YCbCr 4:2:0 semiplanar**, not an H.264 codec selector. The initialization command selects the decoder; configuration selects its postprocessing pixel layout.
@@ -27,6 +27,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 11. [Codec leaf analysis, entropy and concealment](codec-leaf-analysis.md)
 12. [H.264 DPB, prediction and workaround](h264-dpb-prediction.md)
 13. [Parser metadata, scaling tables and support helpers](parser-support.md)
-14. [Nintendo DWL/platform adaptations](platform-glue.md)
+14. [Codec constant tables and VP8 scratch storage](codec-data.md)
+15. [Nintendo DWL/platform adaptations](platform-glue.md)
 
 The source tree is a matching **family/revision reference**, not proof that Nintendo compiled exactly that checkout. Names without an exact upstream counterpart use an `Mvd`/`MVDSTD_` prefix. Source-derived names preserve Hantro spelling. Details that remain uncertain are identified explicitly in the relevant document.

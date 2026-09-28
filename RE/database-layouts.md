@@ -700,3 +700,30 @@ Recovered in the [parser/support pass](parser-support.md). `MvdH264Sps.vuiParame
 | `0x3ac` | `log2MaxMvLengthVertical` | `u32` | 4 |
 | `0x3b0` | `numReorderFrames` | `u32` | 4 |
 | `0x3b4` | `maxDecFrameBuffering` | `u32` | 4 |
+
+## VP8 decode scratch storage (128 bytes)
+
+`VP8DecDecode` (`0x1107CC`) reuses stack bytes `SP+0x20..SP+0x9F` for saved pointers and overlapping 100-byte capability records. `MvdVp8DecodeScratch` is an analysis union, not an asserted source declaration. The union and the function's `scratch` frame variable both read back as 128 bytes. See [codec-data.md](codec-data.md) for the call-site evidence and remaining Hex-Rays member-selection artifacts.
+
+| Union member | Offset | Type | Size |
+|---|---|---|---:|
+| `saved` | `0x0` | `MvdVp8DecodeSavedPointers` | 36 |
+| `dimensions` | `0x0` | `MvdDwlHwConfig` | 100 |
+| `slice` | `0x0` | `MvdVp8SliceConfigScratch` | 128 |
+| `bytes` | `0x0` | `u8[128]` | 128 |
+
+`MvdVp8SliceConfigScratch` contains a seven-word prefix followed by `MvdDwlHwConfig config` at `+0x1C`. The prefix overlaps saved pointer slots; it is not extra capability data. `MvdVp8DecodeSavedPointers` describes the other observed uses:
+
+| Scratch offset | Member | Type | Observed value |
+|---|---|---|---|
+| `0x00` | `concealment` | `MvdVp8EcState *` | `&instance->concealment` |
+| `0x04` | `keyFrameAlias` | `u32 *` | `&instance->decoder.keyFrame` |
+| `0x08` | `modeLfDeltaAlias` | `s32 *` | Copy of the pointer at `+0x18` |
+| `0x0C` | `keyFrame` | `u32 *` | `&instance->decoder.keyFrame` |
+| `0x10` | `chromaTail` | `u32 *` | `&instance->asicBuff.chromaPictures[14].size`, used as a biased pointer into later ASIC fields |
+| `0x14` | `previousOutputIndex` | `u32 *` | `&instance->asicBuff.prevOutBufferI` |
+| `0x18` | `modeLfDelta` | `s32 *` | `&instance->decoder.mbModeLfDelta[1]` |
+| `0x1C` | `overlapWord7` | `u32` | No saved-pointer meaning assigned; overlaps the first word of the shifted config and `dimensions.maxDecPicWidth` |
+| `0x20` | `refreshAlternate` | `u32 *` | `&instance->decoder.refreshAlternate` |
+
+These values occupy the slots only during the pointer-storage lifetime. The capability calls overwrite their respective spans. In particular, apparent `unresolvedWord6` pointer uses in the old pseudocode do not establish a meaning for the capability member at `+0x18`.
