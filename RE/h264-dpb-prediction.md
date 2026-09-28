@@ -113,7 +113,7 @@ The bit location is `(bitPosInWord + frameNumBitWidth - 13)`, relative to the cu
 
 The return value is not simply “a byte was changed”: a raw NAL can be patched and still return zero. It returns one only after a successful patch when the input initially had a start-code prefix. `initialStartCodeBytes` reports that initial prefix length, not the eventual slice's position after scanning. The caller uses the flag for stream-base/length adjustment and later start-code recovery.
 
-The access-unit boundary mask previously recovered in [codec-leaf-analysis.md](codec-leaf-analysis.md) now has an explanation: software accepts the previously parsed frame number or its bit-12-cleared form while the hardware-facing stream can be modified. The exact silicon defect motivating this workaround remains unknown.
+The access-unit boundary mask previously recovered in [codec-leaf-analysis.md](codec-leaf-analysis.md) now has an explanation: software accepts the previously parsed frame number or its bit-12-cleared form while the hardware-facing stream can be modified. The exact silicon defect motivating this workaround remains unknown. Under the user’s subsequent single-console-revision assumption, it is inactive on the target; the [hardware-validation report](hardware-validation.md) records the missing historical erratum separately from active hardware behavior.
 
 A stack word set to one participates in an OR check after the first Exp-Golomb read. It must not be misread as a requirement that `first_mb_in_slice` be nonzero: the saved one makes that check true in the observed path. Hex-Rays merges this word and the output value into an oversized local array; a comment records the disassembly finding.
 

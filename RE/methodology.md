@@ -27,7 +27,7 @@ The first pass applied 208 names/prototypes; the continuation adds 108, for 316 
 
 **Source-assisted field names** describe layouts that agree with binary accesses. The recovered public PP configuration is particularly strong: copy size, defaults, validation and hardware setup all corroborate the map. Register names transferred through aligned repeated triples have less independent semantic evidence than an API matched by full behavior; the exact transfer is exposed in the register inventory.
 
-**Not established** includes successful hardware execution, complete codec/profile conformance, matching fuse settings across console revisions, timing, image quality, and exploitability of unchecked paths. Such claims are deliberately not inferred from a zero-filled hardware segment, a parser accepting headers, or the presence of common register names.
+**Not established** includes successful hardware execution, complete codec/profile conformance, timing, image quality, and exploitability of unchecked paths. Such claims are deliberately not inferred from a zero-filled hardware segment, a parser accepting headers, or the presence of common register names.
 
 ## Validation performed
 
@@ -38,10 +38,10 @@ The documentation was checked for complete command coverage, internal links and 
 ## Remaining uncertainties
 
 * Exact firmware/build identity and upstream Hantro release
-* Whether a live console corresponding to this database matches the supplied GBATEK register reference; the conditional feature matrix is now decoded in hardware.md
+* Hardware execution questions are now explicitly [blocked on console observations or an erratum](hardware-validation.md). Per the user’s instruction, there is one console revision and the supplied register state is assumed; a revision survey is no longer required
 * Runtime H.264 High10 behavior: the SPS parser discards depth fields, and DPB allocation uses eight-bit sample sizes; native ten-bit output is not supported by the recovered layout. Actual rejection, incorrect output or possible downconversion remains untested; see [hardware-followup.md](hardware-followup.md)
 * The unused capability word and extra byte in VP6/VP8 info; the full lifecycle of H.264 `mvc` at `+0x39E0` (the adjacent `+0x39DC` is now [identified as `mvcEnabled`](h264-mvc-state.md)) and the exact silicon fault behind the frame-number workaround. Its bit-12 patch mechanism and G1 build gate are now established. Access-unit, macroblock, slice-command and VP8 parser/concealment regions are now recovered in the codec leaf pass
-* Remaining auxiliary hardware details: tentative status/IRQ/strobe semantics, conversion rounding, dimension-zero behavior and DMA timing. Published hardware findings now support RGBA8888 bytes `AA BB GG RR`, the four L2B formats and several DMA/DRQ meanings; the reference-state VP8 concealment gate is resolved
+* Remaining auxiliary hardware details are blocked on measurements: tentative status/IRQ/strobe semantics, L2B quantization, Y2R2 numerical edge cases, dimension-zero behavior and DMA timing. The published Y2R arithmetic model uses a 0.75 bias, and libctru records an early completion-event caveat. Pixel packing and normal target VP8 concealment reachability are resolved
 * Exact origin and ABI of the remaining runtime/SDK/service routines; the original 265-entry triage is now reduced to 170 unnamed entries after the auxiliary-driver pass; see [remaining-functions.md](remaining-functions.md)
 * Some Hex-Rays artifacts: overlapping packed work-size locals and aliases inside the output mapping array; those were not hidden by inventing a cleaner but unsupported layout
 
@@ -145,3 +145,14 @@ At the user's request, this pass prioritizes hardware questions. GBATEK's origin
 A scan of all 796 decompiled functions, targeted call/data xrefs and instruction checks establish the VP8 concealment gate. Seven container consumers include the single recovered initialization writer; both runner calls require a nonzero capability. The supplied synthesis value disables them. H.264 DPB allocation independently establishes fixed eight-bit sample storage; it does not supply a live High10 result or reveal the frame-number workaround's silicon cause.
 
 Eight existing helpers were renamed; a one-byte RGB enum was applied to seven prototypes and three package members, and two halfword locals were corrected. The database was saved and reopened to check the enum, unchanged 8/12-byte packages, named helpers and regenerated callers. Counts remain 796/170/598 (total/unnamed/inventoried). Findings and residual questions are in [hardware-followup.md](hardware-followup.md). No firmware bytes, reference-source files or live hardware were changed.
+
+
+## Hardware completion/blocker pass under one console revision
+
+The user requested that item 3 be pursued to completion or a blocker, assuming only one console revision. The supplied register values are now the target state; no revision survey remains. Published references, the original Y2R conversion commit and local libctru history were examined. They add the tested-reference 0.75 rounding bias and a documented receive-unit-dependent early event observation, with the distinction between Y2R and Y2R2 retained. The public Y2R test branch generates images but supplies no matching checked output set for the open cases.
+
+The High10 test URL cited by 3DBrew returned 404 over HTTP and HTTPS, and its archive-index lookup was unavailable. Upstream Hantro Linux rejects non-eight-bit H.264 SPS values, corroborating the binary’s eight-bit storage, but neither source settles actual Nintendo High10 execution. The frame-number workaround and VP8 concealment runner are inactive for the assumed hardware. Historical erratum details could not be established from the supplied source or targeted public searches.
+
+Dimension setters and initialization were rechecked. The Y2R initialization call with height 1024 performs no register write, so any claim about its initial zero height depends on the unresolved reset/strobe behavior. Three IDA instruction comments preserve that dependency, the width-zero sentinel intent and the inactive frame-number gate. No names, prototypes or bytes were changed.
+
+[hardware-validation.md](hardware-validation.md) records each resolved/blocked question and the smallest discriminating observation needed. Item 3’s available static/reference work is complete; remaining live behavior is blocked on a console connection or captured results, and historical silicon cause on an erratum. No platform/runtime phase was started.

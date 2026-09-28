@@ -1,6 +1,6 @@
 # Pixel packing and hardware-gated paths
 
-This pass prioritizes the outstanding hardware questions before general platform/runtime work. It combines the saved database, the supplied G1 register dump, local Hantro/libctru source, and GBATEK's published hardware research. Reference confirmation is distinguished from a new console experiment; none was performed here.
+This pass prioritizes the outstanding hardware questions before general platform/runtime work. It combines the saved database, the supplied G1 register dump, local Hantro/libctru source, and GBATEK's published hardware research. Reference confirmation is distinguished from a new console experiment; none was performed here. The subsequent [hardware-validation pass](hardware-validation.md) assumes one console revision at the user’s request and closes item 3’s static/reference work, with explicit hardware/erratum blockers.
 
 ## L2B and Y2R pixel order
 
@@ -72,7 +72,7 @@ VP8DecDecode
 
 All 796 functions were decompiled for an additional typed-use scan. Seven functions use the VP8 container flag: initialization, decode, release, picture allocation, picture setup, stream-position setup and freeze handling; only initialization assigns it. The capability reader is the separate producer. Code/data references to the three helpers reveal only the calls above. This supplements rather than relies on IDA's empty structure-field xref query, which misses these recovered typed accesses.
 
-**Conclusion:** the defect is not reachable through the recovered normal initialized decoder path under the supplied GBATEK capability state. It remains conditional code relevant to a different enabled capability state. This is not a claim about every console revision, arbitrary memory corruption, or unrecognized indirect calls. Freeze/reference-picture recovery still exists when this motion-vector concealment feature is disabled.
+**Conclusion:** the defect is not reachable through the recovered normal initialized decoder path under the supplied GBATEK capability state. Under the subsequently requested single-revision assumption, this resolves normal target reachability. It does not claim protection against arbitrary memory corruption or unrecognized indirect calls. Freeze/reference-picture recovery still exists when this motion-vector concealment feature is disabled.
 
 ## H.264 High10: stronger negative evidence, not a hardware result
 
@@ -102,4 +102,4 @@ Eight existing helpers receive DMA/DRQ semantic names. A one-byte `MvdRgbFormat`
 
 Changes were saved and reopened for type, name and representative decompilation checks. No function was added: totals remain 796 functions, 170 unnamed and 598 inventoried. No instruction bytes, source trees or live registers were modified.
 
-Remaining hardware questions are the explicitly tentative status/IRQ/strobe semantics, exact conversion rounding and timing, live High10 behavior, and the silicon cause of the frame-number workaround. Pixel packing and the reference-state concealment gate no longer belong in the wholly unknown list. General SDK/runtime attribution remains deferred.
+The subsequent [hardware-validation report](hardware-validation.md) locates the published Y2R rounding model and a DMA-event timing caveat, and marks the remaining live High10, L2B precision, Y2R2 edge, dimension-zero and tentative status/IRQ/strobe questions blocked on console evidence. The H.264 workaround is inactive on the assumed single target revision; its historical silicon cause needs an external erratum. Pixel packing and target concealment reachability are resolved. General SDK/runtime attribution remains deferred.
