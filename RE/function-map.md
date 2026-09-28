@@ -172,7 +172,7 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10B8A0` | `MvdL2bReadLineWidth` | `Result MvdL2bReadLineWidth(MvdL2bRegisterContext *registers, u16 *width)` |
 | `0x10B8BC` | `MvdL2bReadBusy` | `Result MvdL2bReadBusy(MvdL2bRegisterContext *registers, u8 *busy)` |
 | `0x10B8D0` | `MvdL2bReadOutputFormatBits` | `Result MvdL2bReadOutputFormatBits(MvdL2bRegisterContext *registers, u16 *bits)` |
-| `0x10B8E8` | `MvdL2bReadInputFormat` | `Result MvdL2bReadInputFormat(MvdL2bRegisterContext *registers, u8 *format)` |
+| `0x10B8E8` | `MvdL2bReadInputFormat` | `Result MvdL2bReadInputFormat(MvdL2bRegisterContext *registers, MvdRgbFormat *format)` |
 | `0x10B900` | `MvdL2bReadLines` | `Result MvdL2bReadLines(MvdL2bRegisterContext *registers, u16 *lines)` |
 | `0x10B914` | `MvdDmaGetState` | `u8 MvdDmaGetState(const Handle *dma)` |
 | `0x10B936` | `MvdDmaTryStart` | `u32 MvdDmaTryStart(Handle *dma, Handle dstProcess, u32 dstAddress, Handle srcProcess, u32 srcAddress, u32 size, const MvdDmaConfig *config)` |
@@ -312,11 +312,11 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10F85C` | `MvdIpcBuildHeader` | `u32 MvdIpcBuildHeader(u32 commandId, u32 normalWords, u32 translatedWords, u32 extra)` |
 | `0x10F874` | `MvdY2rInvalidDimensionsResult` | `Result MvdY2rInvalidDimensionsResult(void)` |
 | `0x10F87C` | `MvdL2bInvalidDimensionsResult` | `Result MvdL2bInvalidDimensionsResult(void)` |
-| `0x10F898` | `MvdY2rSetControlBit23` | `Result MvdY2rSetControlBit23(MvdY2rRegisterContext *registers, s32 enable)` |
-| `0x10F8B8` | `MvdY2rSetControlBit22` | `Result MvdY2rSetControlBit22(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10F898` | `MvdY2rSetOutputDmaEnable` | `Result MvdY2rSetOutputDmaEnable(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10F8B8` | `MvdY2rSetInputDmaEnable` | `Result MvdY2rSetInputDmaEnable(MvdY2rRegisterContext *registers, s32 enable)` |
 | `0x10F8D8` | `MvdY2rSetTransferEndInterrupt` | `Result MvdY2rSetTransferEndInterrupt(MvdY2rRegisterContext *registers, s32 enable)` |
-| `0x10F8F8` | `MvdY2rWriteBackControlBit28` | `Result MvdY2rWriteBackControlBit28(MvdY2rRegisterContext *registers)` |
-| `0x10F914` | `MvdY2rWriteBackControlBit27` | `Result MvdY2rWriteBackControlBit27(MvdY2rRegisterContext *registers)` |
+| `0x10F8F8` | `MvdY2rWriteBackOutputDrq` | `Result MvdY2rWriteBackOutputDrq(MvdY2rRegisterContext *registers)` |
+| `0x10F914` | `MvdY2rWriteBackYuyvInputDrq` | `Result MvdY2rWriteBackYuyvInputDrq(MvdY2rRegisterContext *registers)` |
 | `0x10F930` | `MvdY2rWriteBackControlBit26` | `Result MvdY2rWriteBackControlBit26(MvdY2rRegisterContext *registers)` |
 | `0x10F94C` | `MvdY2rWriteBackControlBit25` | `Result MvdY2rWriteBackControlBit25(MvdY2rRegisterContext *registers)` |
 | `0x10F968` | `MvdY2rWriteBackControlBit24` | `Result MvdY2rWriteBackControlBit24(MvdY2rRegisterContext *registers)` |
@@ -333,11 +333,11 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10FC54` | `MvdY2rWriteInputFormat` | `Result MvdY2rWriteInputFormat(MvdY2rRegisterContext *registers, u32 format)` |
 | `0x10FC6C` | `MvdY2rWriteReset` | `Result MvdY2rWriteReset(MvdY2rRegisterContext *registers)` |
 | `0x10FC80` | `MvdY2rStop` | `Result MvdY2rStop(MvdY2rRegisterContext *registers)` |
-| `0x10FC98` | `MvdL2bSetControlBit23` | `Result MvdL2bSetControlBit23(MvdL2bRegisterContext *registers, s32 enable)` |
-| `0x10FCB8` | `MvdL2bSetControlBit22` | `Result MvdL2bSetControlBit22(MvdL2bRegisterContext *registers, s32 enable)` |
+| `0x10FC98` | `MvdL2bSetOutputDmaEnable` | `Result MvdL2bSetOutputDmaEnable(MvdL2bRegisterContext *registers, s32 enable)` |
+| `0x10FCB8` | `MvdL2bSetInputDmaEnable` | `Result MvdL2bSetInputDmaEnable(MvdL2bRegisterContext *registers, s32 enable)` |
 | `0x10FCD8` | `MvdL2bSetTransferEndInterrupt` | `Result MvdL2bSetTransferEndInterrupt(MvdL2bRegisterContext *registers, s32 enable)` |
-| `0x10FCF8` | `MvdL2bWriteBackControlBit25` | `Result MvdL2bWriteBackControlBit25(MvdL2bRegisterContext *registers)` |
-| `0x10FD14` | `MvdL2bWriteBackControlBit24` | `Result MvdL2bWriteBackControlBit24(MvdL2bRegisterContext *registers)` |
+| `0x10FCF8` | `MvdL2bWriteBackOutputDrq` | `Result MvdL2bWriteBackOutputDrq(MvdL2bRegisterContext *registers)` |
+| `0x10FD14` | `MvdL2bWriteBackInputDrq` | `Result MvdL2bWriteBackInputDrq(MvdL2bRegisterContext *registers)` |
 | `0x10FD30` | `MvdL2bWriteAlpha` | `Result MvdL2bWriteAlpha(MvdL2bRegisterContext *registers, u8 alpha)` |
 | `0x10FD44` | `MvdL2bWriteLines` | `Result MvdL2bWriteLines(MvdL2bRegisterContext *registers, s32 lines)` |
 | `0x10FD7C` | `MvdL2bWriteLineWidth` | `Result MvdL2bWriteLineWidth(MvdL2bRegisterContext *registers, s32 width)` |
@@ -385,11 +385,11 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x112242` | `MVDL2B_SetReceiving` | `Result MVDL2B_SetReceiving(MvdL2bContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
 | `0x112268` | `MVDL2B_GetInputLines` | `Result MVDL2B_GetInputLines(MvdL2bContext *context, u16 *lines)` |
 | `0x112272` | `MVDL2B_SetInputLines` | `Result MVDL2B_SetInputLines(MvdL2bContext *context, s16 lines)` |
-| `0x11227C` | `MVDL2B_GetInputFormat` | `Result MVDL2B_GetInputFormat(MvdL2bContext *context, u8 *format)` |
-| `0x112290` | `MVDL2B_SetInputFormat` | `Result MVDL2B_SetInputFormat(MvdL2bContext *context, u8 format)` |
+| `0x11227C` | `MVDL2B_GetInputFormat` | `Result MVDL2B_GetInputFormat(MvdL2bContext *context, MvdRgbFormat *format)` |
+| `0x112290` | `MVDL2B_SetInputFormat` | `Result MVDL2B_SetInputFormat(MvdL2bContext *context, MvdRgbFormat format)` |
 | `0x11229A` | `MVDL2B_StopConversion` | `Result MVDL2B_StopConversion(MvdL2bContext *context)` |
-| `0x1122A4` | `MVDL2B_GetOutputFormat` | `Result MVDL2B_GetOutputFormat(MvdL2bContext *context, u8 *format)` |
-| `0x1122BA` | `MVDL2B_SetOutputFormat` | `Result MVDL2B_SetOutputFormat(MvdL2bContext *context, u8 format)` |
+| `0x1122A4` | `MVDL2B_GetOutputFormat` | `Result MVDL2B_GetOutputFormat(MvdL2bContext *context, MvdRgbFormat *format)` |
+| `0x1122BA` | `MVDL2B_SetOutputFormat` | `Result MVDL2B_SetOutputFormat(MvdL2bContext *context, MvdRgbFormat format)` |
 | `0x1122C8` | `MVDL2B_StartConversion` | `Result MVDL2B_StartConversion(MvdL2bContext *context)` |
 | `0x11230C` | `MVDL2B_IsBusyConversion` | `Result MVDL2B_IsBusyConversion(MvdL2bContext *context, u8 *busy)` |
 | `0x112318` | `MvdL2bConfigureReceivingDma` | `Result MvdL2bConfigureReceivingDma(MvdL2bContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
@@ -453,8 +453,8 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x113BA0` | `MVDY2R_GetInputFormat` | `Result MVDY2R_GetInputFormat(MvdY2rContext *context, u8 *format)` |
 | `0x113BB8` | `MVDY2R_SetInputFormat` | `Result MVDY2R_SetInputFormat(MvdY2rContext *context, u8 format)` |
 | `0x113BC8` | `MVDY2R_StopConversion` | `Result MVDY2R_StopConversion(void)` |
-| `0x113BD8` | `MVDY2R_GetOutputFormat` | `Result MVDY2R_GetOutputFormat(MvdY2rContext *context, u8 *format)` |
-| `0x113BF4` | `MVDY2R_SetOutputFormat` | `Result MVDY2R_SetOutputFormat(MvdY2rContext *context, u8 format)` |
+| `0x113BD8` | `MVDY2R_GetOutputFormat` | `Result MVDY2R_GetOutputFormat(MvdY2rContext *context, MvdRgbFormat *format)` |
+| `0x113BF4` | `MVDY2R_SetOutputFormat` | `Result MVDY2R_SetOutputFormat(MvdY2rContext *context, MvdRgbFormat format)` |
 | `0x113C04` | `MVDY2R_StartConversion` | `Result MVDY2R_StartConversion(void)` |
 | `0x113C68` | `MVDY2R_DriverInitialize` | `Result MVDY2R_DriverInitialize(void)` |
 | `0x113C8C` | `MVDY2R_IsBusyConversion` | `Result MVDY2R_IsBusyConversion(u8 *busy)` |

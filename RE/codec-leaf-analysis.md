@@ -84,7 +84,7 @@ The spatial pass replaces macroblocks tagged with reference ID 1. It collects fo
 * The neighbor collector clears a 32-byte reference histogram. Hex-Rays still splits it into a four-word array and separate reference-4/reference-5 locals; the attempted aggregate local type was not accepted. Descriptive names and a comment preserve the verified layout without claiming the decompiler representation is fixed
 * The lower-left vote has a real missing boundary guard in the disassembly: when X is nonzero and the row is outside the allowed lower-neighbor range, the slot remains `0xFFFFFFFF`, yet `0x114AE8` still indexes the histogram with it. The shifted index is `-4`, so the increment addresses the word immediately below SP. This is an observed conditional out-of-bounds access, not a tested exploit or an established end-user trigger
 
-The supplied GBATEK reference decodes to hardware error-concealment support zero. These routines therefore do not prove this path executes on that reference hardware. No hardware decode or concealment experiment was performed.
+The supplied GBATEK reference decodes to hardware error-concealment support zero. The later [reachability audit](hardware-followup.md) traces the sole recovered initialization assignment and both gated calls: the normal initialized decoder path cannot reach this helper chain under that reference state. The conditional defect remains relevant to an enabled capability state. No hardware decode or concealment experiment was performed.
 
 ## VP6 entropy and Huffman code
 

@@ -1,6 +1,6 @@
 # Auxiliary services
 
-For the subsequent register/context/DMA analysis and instruction corrections, see [auxiliary-drivers.md](auxiliary-drivers.md). The [transport matrix](auxiliary-ipc.md) records all request/reply sizes and validation behavior.
+For the subsequent register/context/DMA analysis and instruction corrections, see [auxiliary-drivers.md](auxiliary-drivers.md). The [transport matrix](auxiliary-ipc.md) records all request/reply sizes and validation behavior. The [hardware follow-up](hardware-followup.md) establishes reference pixel packing: RGBA8888 is `AA BB GG RR` in memory. The one-byte `MvdRgbFormat` IDs are 0=RGBA8888, 1=RGB888, 2=RGBA5551 and 3=RGB565; L2B ignores input alpha and uses its alpha register.
 
 ## Registration and dispatch
 
@@ -23,10 +23,10 @@ Each operation has an implicit engine context. A scalar setter consumes one word
 
 | ID | Operation | Handler | Explicit handler arguments / data |
 |---|---|---|---|
-| `0x01` | SetInputFormat | `0x112290` | `u8 format` |
-| `0x02` | GetInputFormat | `0x11227C` | `u8 *format` |
-| `0x03` | SetOutputFormat | `0x1122BA` | `u8 format` |
-| `0x04` | GetOutputFormat | `0x1122A4` | `u8 *format` |
+| `0x01` | SetInputFormat | `0x112290` | `MvdRgbFormat format` |
+| `0x02` | GetInputFormat | `0x11227C` | `MvdRgbFormat *format` |
+| `0x03` | SetOutputFormat | `0x1122BA` | `MvdRgbFormat format` |
+| `0x04` | GetOutputFormat | `0x1122A4` | `MvdRgbFormat *format` |
 | `0x05` | SetTransferEndInterrupt | `0x1124AE` | `s8 enable` |
 | `0x06` | GetTransferEndInterrupt | `0x1124A4` | `u8 *enable` |
 | `0x07` | GetTransferEndEvent | `0x112444` | `Handle *event` |
@@ -73,8 +73,8 @@ The operation ordering matches libctru's Y2R client API through `2C`, with an ad
 |---|---|---|---|
 | `0x01` | SetInputFormat | `0x113BB8` | `u8 format` |
 | `0x02` | GetInputFormat | `0x113BA0` | `u8 *format` |
-| `0x03` | SetOutputFormat | `0x113BF4` | `u8 format` |
-| `0x04` | GetOutputFormat | `0x113BD8` | `u8 *format` |
+| `0x03` | SetOutputFormat | `0x113BF4` | `MvdRgbFormat format` |
+| `0x04` | GetOutputFormat | `0x113BD8` | `MvdRgbFormat *format` |
 | `0x05` | SetRotation | `0x1138DC` | `u8 rotation` |
 | `0x06` | GetRotation | `0x1138B0` | `u8 *rotation` |
 | `0x07` | SetBlockAlignment | `0x113D74` | `u8 alignment` |
@@ -137,4 +137,4 @@ Y2R's line width requires a positive multiple of eight up to 1024, encoded as ze
 
 These auxiliary interfaces use direct platform results, not the Hantro decoder/PP result converter. Detailed silicon behavior, L2B format ordering and DMA timing remain outside what the static call mapping proves.
 
-The driver continuation recovers module and session lifetimes, IRQ binding, DMA completion/setup distinctions and the differing process-handle close behavior during termination. See [auxiliary-drivers.md](auxiliary-drivers.md). L2B format ordering and unnamed control/status bits remain uncertain.
+The driver continuation recovers module and session lifetimes, IRQ binding, DMA completion/setup distinctions and the differing process-handle close behavior during termination. See [auxiliary-drivers.md](auxiliary-drivers.md). The [hardware follow-up](hardware-followup.md) establishes reference pixel ordering and DMA/DRQ roles; tentative acknowledgement, IRQ and strobe behavior remains uncertain.
