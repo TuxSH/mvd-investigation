@@ -732,4 +732,20 @@ These values occupy the slots only during the pointer-storage lifetime. The capa
 
 ## H.264 MVC flag refinement
 
-`MvdH264Storage+0x39DC` is now `u32 mvcEnabled`, replacing `unresolvedWord3703`. The existing `mvc` at `+0x39E0` and `view` at `+0x39E4` retain their offsets. The enable API writes the former; prefix-NAL handling copies it into the latter MVC state word. See [h264-mvc-state.md](h264-mvc-state.md) for the full tail map and pointer-alias evidence. Parent sizes remain 14864/15860 bytes.
+`MvdH264Storage+0x39DC` is now `u32 mvcEnabled`, replacing `unresolvedWord3703`. The second word at `+0x39E0` is now `u32 mvcDpbLimit` (formerly `mvc`); `view` remains at `+0x39E4`. The enable API writes the former; prefix-NAL handling copies it into the DPB-limit latch, which ordinary picture reset preserves. See [h264-mvc-state.md](h264-mvc-state.md) and [codec semantics](codec-semantics.md) for its lifecycle and allocation limits. Parent sizes remain 14864/15860 bytes.
+
+## Codec semantic pass: info bytes and picture-state view
+
+`MvdVp6Info+0x1C` and `MvdVp8Info+0x20` are now named `constantZero`, replacing `extraFlag`. Both remain `u8`, followed by three padding bytes. The getter writes only the byte, not the padding; the full info structures remain 36/40 bytes.
+
+`MvdH264PictureStateView` is a 44-byte analysis view beginning at `MvdH264Storage+0x1F80`. It spans the tail of `aub` and all of `currImage`; it neither adds storage nor changes the parent layout. `h264bsdDecode` uses a plain pointer to this view because its earlier shifted pointer failed to persist.
+
+| View offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x00` | `prevDeltaPicOrderCntBottom` | `s32` | 4 |
+| `0x04` | `prevDeltaPicOrderCnt` | `s32[2]` | 8 |
+| `0x0C` | `prevFieldPicFlag` | `u32` | 4 |
+| `0x10` | `prevBottomFieldFlag` | `u32` | 4 |
+| `0x14` | `firstCallFlag` | `u32` | 4 |
+| `0x18` | `newPicture` | `u32` | 4 |
+| `0x1C` | `currImage` | `MvdH264Image` | 16 |

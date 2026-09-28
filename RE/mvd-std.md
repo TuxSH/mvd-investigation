@@ -95,7 +95,7 @@ All offsets below are bytes. Pointer values are 32-bit.
 
 ### VP8 info, 0x28 bytes (`10`)
 
-`00/04`: version/profile; `08/0C`: coded width/height; `10/14`: rounded frame width/height; `18/1C`: scaled width/height; `20`: zeroed byte plus padding (semantic purpose unresolved); `24`: output pixel format.
+`00/04`: version/profile; `08/0C`: coded width/height; `10/14`: rounded frame width/height; `18/1C`: scaled width/height; `20`: `constantZero`, one byte written as zero on success; `21..23`: padding not initialized by the getter; `24`: output pixel format. The original purpose of the extra byte is unknown, but its [zero-only behavior is established](codec-semantics.md).
 
 ### VP8 picture, 0x40 bytes (`0F`, `11`)
 
@@ -103,7 +103,7 @@ All offsets below are bytes. Pointer values are 32-bit.
 
 ### VP6 info and picture, each 0x24 bytes (`15`..`17`)
 
-Info: version, profile, frame width, frame height, scaled width, scaled height, scaling mode, zero byte plus padding, output pixel format.
+Info: version, profile, frame width, frame height, scaled width, scaled height, scaling mode, `constantZero` byte at `1C`, padding at `1D..1F`, output pixel format at `20`. The byte is zero on success; the getter does not initialize the padding. Both VP6/VP8 replies copy their full records, including padding, and early errors do not guarantee initialized metadata.
 
 Picture: frame width, frame height, output pointer, output bus address, picture ID, intra flag, golden-frame flag, concealed macroblocks, output layout byte plus padding. The observed next-picture routine zeroes picture ID, intra/golden flags, and concealed-macroblock count.
 

@@ -1,5 +1,7 @@
 # H.264 MVC enable state and interior pointers
 
+**Current status:** the later [codec semantic pass](codec-semantics.md) names the second word `mvcDpbLimit`, traces its prefix-NAL latch lifecycle, and explains why its requested-size cap is not an absolute eight-buffer allocation limit. It also repairs the picture-state pointer with a persistent plain-pointer view and verifies the separate SPS/PPS locals. The historical steps below describe how these distinctions were first recovered.
+
 ## Resolved storage word
 
 `MvdH264Storage+0x39DC`, formerly `unresolvedWord3703`, is now named **`mvcEnabled`**. This is a descriptive name for the MVC request/NAL-acceptance flag in this branch. The identification comes from a writer and a parser consumer, not from its position beside an existing MVC field.
@@ -8,7 +10,7 @@
 |---|---|---|
 | `0x10451C` | `H264DecSetMvc` (`0x1044E0`) | Writes 1 after instance validation and the MVC capability check |
 | `0x115D4C` | `h264bsdDecode` (`0x115C28`) | Reads the word through a base at storage `+0x39C0`, seven words later |
-| `0x11660C` | `h264bsdDecode`, prefix NAL case | Copies this flag into the distinct word at storage `+0x39E0` |
+| `0x11660C` | `h264bsdDecode`, prefix NAL case | Copies this flag into the distinct `mvcDpbLimit` word at storage `+0x39E0` |
 | `0x103B74` | `H264DecGetInfo` | Tests `mvcEnabled` before doubling `multiBuffPpSize` |
 | `0x115070` | `h264bsdAllocateSwResources` | Tests the neighboring `mvc` before capping `maxDpbSize` at 8 |
 
@@ -18,13 +20,13 @@ The parser discards NAL type 0. For types at least 13, it only proceeds when `mv
 
 ## Two adjacent flags, not a layout shift
 
-The neighboring word already named `mvc` is distinct. Prefix-NAL handling sets `view` to zero, copies `mvcEnabled` into `mvc`, then stores `!nal.interViewFlag` in `nonInterViewRef`. The current evidence supports retaining both fields and the following offsets:
+The neighboring word, initially named `mvc` and now `mvcDpbLimit`, is distinct. Prefix-NAL handling sets `view` to zero, copies `mvcEnabled` into the latch, then stores `!nal.interViewFlag` in `nonInterViewRef`. The recovered offsets are:
 
 | Storage offset | Member | Meaning established here |
 |---|---|---|
 | `0x39D8` | `currentMarked` | Existing picture-marking state |
 | `0x39DC` | `mvcEnabled` | API request flag and MVC NAL acceptance gate |
-| `0x39E0` | `mvc` | Receives the enable flag on a prefix NAL; enables the DPB-size cap of 8 |
+| `0x39E0` | `mvcDpbLimit` | Receives the enable flag on a prefix NAL; caps the requested DPB size at 8 |
 | `0x39E4` | `view` | Current view; set to zero for the prefix path |
 | `0x39E8` | `viewId[2]` | Existing two-view identifiers |
 | `0x39F0` | `outView` | Existing output-view selector |
@@ -32,7 +34,7 @@ The neighboring word already named `mvc` is distinct. Prefix-NAL handling sets `
 | `0x39F8` | `baseOppositeFieldPic` | Existing base-view field state |
 | `0x39FC` | `nonInterViewRef` | Receives the inverse of the prefix's inter-view flag |
 
-The supplied source has one `mvc` member between `currentMarked` and `view`; MVD has two words in that interval. Importing that source tail without accounting for this difference would move `view` and every later member to the wrong offset. The [readability continuation](codec-readability.md) confirms that `+0x39E0` gates a DPB-size cap of 8, absent from the supplied allocation routine. Its full lifecycle remains to be traced; this pass does not rename it to a stronger interpretation such as “MVC picture active.” Storage/container sizes remain **14864/15860 bytes**.
+The supplied source has one `mvc` member between `currentMarked` and `view`; MVD has two words in that interval. Importing that source tail without accounting for this difference would move `view` and every later member to the wrong offset. The [readability continuation](codec-readability.md) confirms that `+0x39E0` gates a requested DPB-size cap of 8, absent from the supplied allocation routine. The later semantic pass establishes that picture reset preserves the latch; whole-storage initialization clears it. No-reordering allocation uses the reference count instead of the capped argument. Storage/container sizes remain **14864/15860 bytes**.
 
 ## Service consequence
 
@@ -50,8 +52,8 @@ Three locals in `h264bsdDecode` now have descriptive base names:
 |---|---|---|
 | `mvcStateBase` | `0x39C0` | `u32 *__shifted(MvdH264Storage,0x39C0)`; named MVC/view fields through `ADJ` |
 | `streamStateBase` | `0x3500` | `u32 *__shifted(MvdH264Storage,0x3500)`; named previous-buffer flag, pointer and byte count |
-| `pictureStateBase` | `0x1F80` | Plain `s32 *`; `[6]` is `aub.newPicture`, `[7]` is `currImage.data`; shifted typing still does not persist |
+| `pictureState` (formerly `pictureStateBase`) | `0x1F80` | Now `MvdH264PictureStateView *`; named `newPicture` and `currImage.data` accesses survive reopening |
 
-The first two shifted types were applied through IDAPython pointer-type metadata after the MCP local-type parser rejected the shifted declarations. The third retains only its rename. The later [readability pass](codec-readability.md) briefly produced named accesses by typing the frame member, but its final reopen check showed that the shifted type still did not persist. The indexed accesses remain annotated rather than being claimed as repaired. Other merged lifetimes and SPS/PPS stack overlays also remain in this large function.
+The first two shifted types were applied through IDAPython pointer-type metadata after the MCP local-type parser rejected the shifted declarations. The third originally retained only its rename, and the [readability pass](codec-readability.md) could not make that shifted type persist. The [semantic pass](codec-semantics.md) resolves this with an ordinary pointer to a 44-byte analysis view of the existing storage. It also verifies correctly separated SPS/PPS objects in fresh decompilation; residual aliases elsewhere in this large function are not a claim of incorrect runtime storage.
 
 The database was saved before switching between MCP and installed batch IDA, and reopened for read-back. The final member name, API assignment and parser uses were checked, along with unchanged parent sizes. A temporary pre-edit recovery copy is `/tmp/mvd-before-alias8.i64`, outside the tracked output. The same pass repairs the API decoder's loop branch and default switch target, documented in [control-flow-corrections.md](control-flow-corrections.md). Function attribution counts remain 501 documented entries, 796 database functions and 265 `sub_*` names.

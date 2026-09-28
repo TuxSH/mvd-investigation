@@ -46,7 +46,7 @@ Two additional interior-reference groups belong to already typed `mcFilter` (`0x
 
 ## Limits and next work
 
-The codec work still has semantic and representation gaps: the five unresolved register ordinals, capability word `+0x18`, the extra VP6/VP8 info byte, the full lifecycle of storage `mvc` at `+0x39E0`, SPS/PPS stack overlays, and the H.264 picture-state pointer whose shifted type does not persist. Hardware-dependent questions retain their separate status. See [methodology.md](methodology.md) and [codec-readability.md](codec-readability.md).
+The later [codec semantic closure pass](codec-semantics.md) resolves the prefix-latch lifecycle of storage `+0x39E0` (now `mvcDpbLimit`), confirms separate SPS/PPS stack objects, and replaces the failing shifted pointer with a persistent picture-state view. It establishes zero-only behavior for capability `+0x18` and the extra VP6/VP8 info byte. Their original field meanings and five register definitions remain unavailable; these are now explicit definition/provenance gaps rather than untraced active codec behavior. Hardware-dependent questions retain their separate status.
 
 The deferred function inventory also identifies ABI traps for the final phase. Division-family entries at `0x10E9E8` and `0x10F668` must be reviewed for register-pair quotient/remainder behavior before assigning prototypes. Memory-fill veneers can enter the middle of a shared routine, and the sending-path entry `0x10B97C` originally appeared to jump to `0x10BBE4` (the later driver pass corrects it to an ARM SVC `0x53` veneer). These are reasons to preserve uncertainty now, not additional codec algorithms.
 

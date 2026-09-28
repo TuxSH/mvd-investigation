@@ -66,7 +66,7 @@ Some copied interior pointers still lose their parent type in later temporaries,
 
 ## H.264 aliases and additional MVC evidence
 
-`h264bsdDecode` (`0x115C28`) still has a persistence limitation for `pictureStateBase`, at storage `+0x1F80`. Typing the frame member at `SP+0x5C0` temporarily produced named `aub.newPicture` and `currImage.data` accesses, but the final reopen/regeneration check reverted this local to plain `s32 *`. Further attempts did not establish a persistent repair. Its `[6]`/`[7]` meanings remain documented and commented; this item is not counted as complete. SPS/PPS stack overlays also need a separate review.
+At this checkpoint, `h264bsdDecode` (`0x115C28`) had a persistence limitation for `pictureStateBase`, at storage `+0x1F80`. Typing the frame member at `SP+0x5C0` temporarily produced named accesses, but the reopen check reverted it to `s32 *`. **Resolved later:** the [codec semantic pass](codec-semantics.md) uses an ordinary `MvdH264PictureStateView *`, with named `newPicture` and `currImage.data` accesses verified after reopening. The same pass verifies separate, correctly typed SPS/PPS locals; the earlier overlay item is closed.
 
 Two biased locals in `h264bsdAllocateSwResources` (`0x115004`) now expose `storage.dpb` and `storage.useSmoothing`. A container-relative local in `H264DecGetInfo` (`0x103AD4`) exposes `dpbMode` and `tiledReferenceEnable`.
 
@@ -75,7 +75,7 @@ Tracing named MVC consumers adds two observations to [the MVC state analysis](h2
 * At `0x103B74`, `H264DecGetInfo` tests **`mvcEnabled` at storage `+0x39DC`** and doubles `multiBuffPpSize`. Before doubling, that value is 2 when DPB output reordering is disabled, otherwise `dpbSize+1`. The source uses its single `mvc` flag for the same operation.
 * At `0x115070..0x11507A`, `h264bsdAllocateSwResources` tests **`mvc` at storage `+0x39E0`** and clamps `maxDpbSize` to 8 when it is at least 8. This occurs after selecting the active SPS size, or the larger active/base-view SPS size for a nonzero view, and before `h264bsdResetDpb`. This cap is absent from the supplied allocation routine.
 
-Thus the enable/request flag affects advertised buffer requirements, while the prefix-populated state also affects allocation. The existing `mvc` name is retained: this consumer does not establish its complete lifecycle or justify renaming it to a broader “active picture” flag. The software capability gate still prevents the normal enable API from reaching its write.
+Thus the enable/request flag affects advertised buffer requirements, while the prefix-populated state also affects allocation. This pass initially retained the `mvc` name. The later semantic pass names it `mvcDpbLimit` after tracing the latch lifecycle and distinguishes the capped argument from the effective no-reordering size and total allocation. The software capability gate still prevents the normal enable API from reaching its write.
 
 ## Method and verification
 

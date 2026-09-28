@@ -767,3 +767,5 @@ The remaining unnamed ordinals are 8, 10, 128, 282 and 598:
 Ordinal 19 was previously left unnamed because duplicate triples alone were insufficient. The shared initializer now supplies independent source-sequence evidence; see [parser-support.md](parser-support.md).
 
 Field 579 has a supported descriptive name but only a partial encoding map. No live register experiment was used to resolve these fields.
+
+The later [codec semantic audit](codec-semantics.md) checks accessor calls across all 796 functions, nonliteral selector assignments and eleven selector tables. Ordinals 8, 10, 128 and 282 are not selected by those recovered paths. Ordinal 598 is only written as zero at `0x10DDE2`. Physical register bits can still be accessed through aliases or whole-word transfers; this finding concerns the unnamed ordinals, not hardware absence. No additional semantic names were justified.
