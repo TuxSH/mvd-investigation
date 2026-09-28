@@ -703,7 +703,7 @@ Recovered in the [parser/support pass](parser-support.md). `MvdH264Sps.vuiParame
 
 ## VP8 decode scratch storage (128 bytes)
 
-`VP8DecDecode` (`0x1107CC`) reuses stack bytes `SP+0x20..SP+0x9F` for saved pointers and overlapping 100-byte capability records. `MvdVp8DecodeScratch` is an analysis union, not an asserted source declaration. The union and the function's `scratch` frame variable both read back as 128 bytes. See [codec-data.md](codec-data.md) for the call-site evidence and remaining Hex-Rays member-selection artifacts.
+`VP8DecDecode` (`0x1107CC`) reuses stack bytes `SP+0x20..SP+0x9F` for saved pointers and overlapping 100-byte capability records. `MvdVp8DecodeScratch` is an analysis union, not an asserted source declaration. The union and the function's `scratch` frame variable both read back as 128 bytes. See [codec-data.md](codec-data.md) for the call-site evidence and [codec-readability.md](codec-readability.md) for the subsequent saved member selections and shifted pointer types.
 
 | Union member | Offset | Type | Size |
 |---|---|---|---:|
@@ -725,6 +725,8 @@ Recovered in the [parser/support pass](parser-support.md). `MvdH264Sps.vuiParame
 | `0x18` | `modeLfDelta` | `s32 *` | `&instance->decoder.mbModeLfDelta[1]` |
 | `0x1C` | `overlapWord7` | `u32` | No saved-pointer meaning assigned; overlaps the first word of the shifted config and `dimensions.maxDecPicWidth` |
 | `0x20` | `refreshAlternate` | `u32 *` | `&instance->decoder.refreshAlternate` |
+
+The seven pointer members other than `concealment` now have shifted types preserving their parent records; the displayed base types above remain four-byte pointers. [codec-readability.md](codec-readability.md) gives the parent types and biases.
 
 These values occupy the slots only during the pointer-storage lifetime. The capability calls overwrite their respective spans. In particular, apparent `unresolvedWord6` pointer uses in the old pseudocode do not establish a meaning for the capability member at `+0x18`.
 

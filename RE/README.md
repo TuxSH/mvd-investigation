@@ -5,7 +5,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 ## Main findings
 
 * The module contains Hantro decoder-library code, not merely a custom driver for compatible hardware. The H.264, VP6, VP8/WebP and postprocessor API implementations have identifiable counterparts in the supplied `hlibg1v6` source tree.
-* The current inventory contains 501 applied function names/prototypes, and 725 of 730 register fields are named. Two data passes add 86 constant-table names/types. Control-flow corrections repair a falsely separated H.264 epilogue, two Thumb long branches and a switch branch misclassified as data. The latest pass also identifies storage `+0x39DC` as `mvcEnabled` and improves two decoder pointer aliases. The database has 796 functions, with 265 `sub_*` names.
+* The current inventory contains 501 applied function names/prototypes, and 725 of 730 register fields are named. Two data passes add 86 constant-table names/types. Control-flow corrections repair a falsely separated H.264 epilogue, two Thumb long branches and a switch branch misclassified as data. Storage `+0x39DC` is identified as `mvcEnabled`. The latest readability pass separates VP8 filter/reference-buffer lifetimes, corrects scratch-union views, resolves further H.264/VP8 pointer aliases and confirms a separate MVC DPB-size cap. The database has 796 functions, with 265 `sub_*` names.
 * All 33 `mvd:STD` commands can be assigned functional roles. The previously unclear command groups are H.264, VP8/VP7/WebP, VP6, and postprocessor operations.
 * The service's 284-byte configuration is Hantro `PPConfig`. Its previously unknown areas contain RGB controls, masks, range mapping, rotation and deinterlacing settings.
 * `0x00020001` in this configuration means **YCbCr 4:2:0 semiplanar**, not an H.264 codec selector. The initialization command selects the decoder; configuration selects its postprocessing pixel layout.
@@ -30,6 +30,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 14. [Codec constant tables and VP8 scratch storage](codec-data.md)
 15. [H.264 control-flow corrections](control-flow-corrections.md)
 16. [H.264 MVC state and interior pointers](h264-mvc-state.md)
-17. [Nintendo DWL/platform adaptations](platform-glue.md)
+17. [Codec pointer lifetimes and scratch views](codec-readability.md)
+18. [Nintendo DWL/platform adaptations](platform-glue.md)
 
 The source tree is a matching **family/revision reference**, not proof that Nintendo compiled exactly that checkout. Names without an exact upstream counterpart use an `Mvd`/`MVDSTD_` prefix. Source-derived names preserve Hantro spelling. Details that remain uncertain are identified explicitly in the relevant document.
