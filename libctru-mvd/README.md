@@ -183,3 +183,14 @@ Inherited Y2R advice about rotation and transfer-unit tuning is identified as su
 Tests cover every STD opcode, translated process/mapped-buffer descriptors, signed byte and DMA arguments, output count bounds, event ownership, native-event output gating, transport failures, padding/overlong replies, auxiliary engine routing, and partial-init cleanup. Auxiliary tests focus on distinct transport and failure cases rather than exhaustively repeating every scalar setter. The archive is also compiled with optimization and warnings as errors.
 
 These checks validate client encoding, layouts and local control flow. They do not demonstrate successful real video decoding, DMA timing, pixel accuracy or hardware capability beyond the prior static/reference findings.
+
+## Source style and API documentation
+
+The completed clients and C checks follow the local `.clang-format`: tabs for block indentation, spaces for alignment, and a four-column tab width. Format only the maintained files, leaving the `upstream/` provenance snapshots intact:
+
+```sh
+cd libctru-mvd
+clang-format -i include/3ds/services/*.h source/services/*.c tests/*.c
+```
+
+Public function contracts live in the headers, with `@brief`, direction-qualified `@param` entries for every argument, and return semantics for non-void functions. Types, individual fields (including legacy aliases), enum values and macros have their own descriptions. Private IPC helpers are documented at their definitions. The documentation records units, address spaces, ownership and result-dependent output validity without changing the wire ABI.

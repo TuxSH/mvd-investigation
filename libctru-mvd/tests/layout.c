@@ -1,3 +1,7 @@
+/**
+ * @file layout.c
+ * @brief Compile-time checks of public wire layouts and legacy field aliases
+ */
 #include <stddef.h>
 #include <3ds/services/mvd.h>
 #include <3ds/services/l2b.h>
@@ -6,11 +10,24 @@
 #include <3ds/ipc.h>
 
 #ifdef __cplusplus
+/// @brief C++ compile-time assertion primitive
 #define CHECK static_assert
 #else
+/// @brief C compile-time assertion primitive
 #define CHECK _Static_assert
 #endif
+/**
+ * @brief Asserts an exact structure size
+ * @param[in] type Type whose wire size is checked
+ * @param[in] size Expected byte size
+ */
 #define SIZE(type, size) CHECK(sizeof(type) == size, #type)
+/**
+ * @brief Asserts a wire-field byte offset
+ * @param[in] type Containing structure type
+ * @param[in] field Member whose offset is checked
+ * @param[in] offset Expected byte offset
+ */
 #define OFFSET(type, field, offset) CHECK(offsetof(type, field) == offset, #type "." #field)
 
 SIZE(MVDSTD_Config, 0x11C);
@@ -59,11 +76,14 @@ SIZE(MVDSTD_OutputBuffersEntry, 8);
 SIZE(MVDSTD_OutputBuffersEntryList, 140);
 #endif
 
-/* Compile both new and legacy field access, including signed adjustments */
+/**
+ * @brief Compiles both recovered and legacy member names with signed adjustments
+ * @param[in,out] config Configuration receiving representative field assignments
+ */
 void layout_example(MVDSTD_Config* config)
 {
- config->unk_x6c[0] = MVD_RGB_BT601;
- config->rgb_transform = MVD_RGB_BT709;
- config->contrast = -32;
- config->output_x_pos = -16;
+	config->unk_x6c[0] = MVD_RGB_BT601;
+	config->rgb_transform = MVD_RGB_BT709;
+	config->contrast = -32;
+	config->output_x_pos = -16;
 }
