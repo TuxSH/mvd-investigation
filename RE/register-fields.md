@@ -1,6 +1,6 @@
 # Register-field inventory
 
-This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 26 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (five entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
+This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 26 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (four entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
 
 | Ordinal | Assigned name | Register word | Bank byte offset | Width | Shift |
 |---:|---|---:|---|---:|---:|
@@ -14,7 +14,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | 7 | `HWIF_DEC_RDY_INT` | 1 | `0x004` | 1 | 12 |
 | 8 | — | 1 | `0x004` | 1 | 11 |
 | 9 | `HWIF_DEC_IRQ` | 1 | `0x004` | 1 | 8 |
-| 10 | — | 1 | `0x004` | 1 | 5 |
+| 10 | `HWIF_DEC_ABORT_E` | 1 | `0x004` | 1 | 5 |
 | 11 | `HWIF_DEC_IRQ_DIS` | 1 | `0x004` | 1 | 4 |
 | 12 | `HWIF_DEC_E` | 1 | `0x004` | 1 | 0 |
 | 13 | `HWIF_DEC_AXI_RD_ID` | 2 | `0x008` | 8 | 24 |
@@ -754,12 +754,11 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | 708, 720–722 | `PPSetFrmBufferWriting`: high bits of down/right/left/up framebuffer crossing respectively |
 | 723 | `PPSetFrmBufferWriting`: framebuffer/display width; 13 bits in MVD versus 12 in source |
 
-The remaining unnamed ordinals are 8, 10, 128, 282 and 598:
+The remaining unnamed ordinals are 8, 128, 282 and 598. The [definition follow-up](codec-definition-followup.md) identifies ordinal 10 as abort control using the G2 spelling plus independent G1 driver evidence:
 
 | Ordinal | Limitation |
 |---|---|
-| 8 | Word 1 bit 11; no supported semantic assignment |
-| 10 | Word 1 bit 5; no supported semantic assignment |
+| 8 | Word 1 bit 11; G2 abort-status candidate, without independent confirmation for this build |
 | 128 | Word 7 bit 13, in a VC1-related sequence; surrounding field names do not establish this bit's meaning |
 | 282 | Same full-word triple as ordinal 281 (`HWIF_REFER6_BASE`), next to VP8 stride/chroma controls; duplicate address does not justify copying the reference-buffer name |
 | 598 | Word 58 bit 31; the supplied reference dump reports zero at this word, which does not identify the bit |
@@ -768,4 +767,4 @@ Ordinal 19 was previously left unnamed because duplicate triples alone were insu
 
 Field 579 has a supported descriptive name but only a partial encoding map. No live register experiment was used to resolve these fields.
 
-The later [codec semantic audit](codec-semantics.md) checks accessor calls across all 796 functions, nonliteral selector assignments and eleven selector tables. Ordinals 8, 10, 128 and 282 are not selected by those recovered paths. Ordinal 598 is only written as zero at `0x10DDE2`. Physical register bits can still be accessed through aliases or whole-word transfers; this finding concerns the unnamed ordinals, not hardware absence. No additional semantic names were justified.
+The later [codec semantic audit](codec-semantics.md) checks accessor calls across all 796 functions, nonliteral selector assignments and eleven selector tables. Ordinals 8, 10, 128 and 282 are not selected by those recovered paths. Ordinal 598 is only written as zero at `0x10DDE2`. Physical register bits can still be accessed through aliases or whole-word transfers; this finding concerns the unnamed ordinals, not hardware absence. That consumer scan justified no additional names; subsequent source evidence identifies ordinal 10, without establishing an MVD consumer or operational hardware support.

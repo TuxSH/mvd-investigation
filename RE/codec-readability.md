@@ -1,5 +1,7 @@
 # Codec pointer lifetimes and scratch views
 
+**Later definition update:** [The source follow-up](codec-definition-followup.md) identifies capability `+0x18` as `jpegProgSupport` and register ordinal 10 as `HWIF_DEC_ABORT_E`. Earlier unresolved-name statements in this pass are historical. Four register ordinals and the VP6/VP8 constant-zero info-byte meanings remain blocked.
+
 This continuation examines five already-attributed Hantro functions and makes persistent readability repairs in four of them. It does not add function attributions or change executable bytes. The source reference remains the local `hlibg1v6` tree; these are analysis types and names, not claims about exact original local declarations.
 
 ## VP8 filter and reference-buffer lifetimes

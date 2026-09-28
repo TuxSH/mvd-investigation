@@ -22,7 +22,7 @@ Several independent fingerprints agree:
 | `0x109628` | `source/vp6/vp6hwd_api.c: VP6DecInit` | Same DWL client 7, reference count clamped to 3..16, concealment and tiled-reference handling |
 | `0x110EA0` | `source/vp8/vp8decapi.c: VP8DecInit` | Same VP7/VP8/WebP selector, DWL client 10, buffer minima 3/4/1 and mode-specific branches |
 | `0x10F324`, `0x10E0FC` | `source/common/regdrv.c: SetDecRegister`, `GetDecRegister` | Identical table-driven word/width/shift insertion and extraction algorithm |
-| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 26 call-site-derived names, retaining five unnamed entries |
+| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 26 call-site-derived names, then one G1-corroborated abort-control name; four entries remain unnamed |
 
 Together these establish Hantro software ancestry at function and data-layout level. A generic Hantro-compatible register map alone would not establish that ancestry.
 

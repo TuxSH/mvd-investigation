@@ -183,3 +183,8 @@ Validation compares a SHA-256 of loaded code/read-only bytes over `0x100000..0x1
 Detailed findings are in [platform-sdk-runtime.md](platform-sdk-runtime.md) and [heap-runtime.md](heap-runtime.md). The function-queue status now distinguishes behavioral completion from original source identity and blocked hardware evidence.
 
 Final read-back checks all 188 touched function entries and 27 selected structure sizes after reopening. One constructor name reverted during analysis and was restored. Marking process exit as nonreturning also caused IDA to split the unreachable `POP {R4,PC}` at `0x114492` into a spurious function; it was restored to the existing exit wrapper, preserving the 800-function total. The verification completed without decompilation API errors; the separately documented division local-allocation warning remains.
+
+
+## Codec definition follow-up
+
+After platform closure, the requested item-3 pass compares adjacent source packages and independent primary driver definitions. Matching all 22 members of `DecHwConfig` resolves capability `+0x18` as `jpegProgSupport`. G2 supplies the spelling of abort-control ordinal 10, independently corroborated by NXP G1 reset/release code. The enum now has 726 names. Cross-generation status-bit evidence, alias-only triples and zero-only info writes remain insufficient for further assignments. The [follow-up report](codec-definition-followup.md) records source provenance, rejected candidates, four register blockers and the two info-byte blockers. One member rename, one enum addition and two comments were saved; firmware bytes and function counts are unchanged.

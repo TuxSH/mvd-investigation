@@ -70,7 +70,7 @@ These are recovered 32-bit layouts for this database. Public configuration and I
 | `0xc` | `vc1Support` | `u32` | 4 |
 | `0x10` | `mpeg2Support` | `u32` | 4 |
 | `0x14` | `jpegSupport` | `u32` | 4 |
-| `0x18` | `unresolvedWord6` | `u32` | 4 |
+| `0x18` | `jpegProgSupport` | `u32` | 4 |
 | `0x1c` | `maxDecPicWidth` | `u32` | 4 |
 | `0x20` | `ppSupport` | `u32` | 4 |
 | `0x24` | `ppConfig` | `u32` | 4 |
@@ -783,3 +783,5 @@ The final platform pass adds these instruction-derived analysis types. They desc
 | `MvdSdkAddressArena` | 24 | Bounds, unnamed word and recursive lock |
 
 The member-callback prefix was reconciled with the existing `NotificationEntry`/`NotificationEntryListNode` types rather than leaving its list/ID words unnamed. Heap and SDK scalar stack locals are explicitly typed where Hex-Rays had inferred arrays spanning saved registers. Loaded codec structure sizes and MMIO layouts are unchanged.
+
+The [definition follow-up](codec-definition-followup.md) identifies capability `+0x18` as `jpegProgSupport` by matching the complete 22-word `DecHwConfig` source prefix. The 100-byte MVD record and zero-only behavior are unchanged. Earlier `unresolvedWord6` mentions above describe historical pseudocode.

@@ -1,5 +1,7 @@
 # Function and constant attribution coverage
 
+**Later definition update:** [The source follow-up](codec-definition-followup.md) identifies capability `+0x18` as `jpegProgSupport` and register ordinal 10 as `HWIF_DEC_ABORT_E`. Earlier unresolved-name statements in this pass are historical. Four register ordinals and the VP6/VP8 constant-zero info-byte meanings remain blocked.
+
 **Current update:** the [platform/SDK/runtime pass](platform-sdk-runtime.md), with [heap analysis last](heap-runtime.md), closes all 170 entries left after the auxiliary-driver pass and resolves the last two deferred data heads. The database now has 800 functions and zero `sub_*` names. Exact SDK/runtime source identities remain qualified. The sections below retain the earlier audit checkpoint.
 
 The remaining-function sweep found no additional routine that this pass can confidently name as Hantro codec code. All 265 remaining `sub_*` entries were decompiled and reviewed with their reference context. They fall into service/driver, SDK, startup and runtime work queues, detailed in [remaining-functions.md](remaining-functions.md). This is a classification of existing entries, not proof that every instruction or indirect target has been identified.

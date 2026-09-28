@@ -1,5 +1,7 @@
 # Codec semantic closure and remaining definition gaps
 
+**Later definition update:** [The source follow-up](codec-definition-followup.md) identifies capability `+0x18` as `jpegProgSupport` and register ordinal 10 as `HWIF_DEC_ABORT_E`. Earlier unresolved-name statements in this pass are historical. Four register ordinals and the VP6/VP8 constant-zero info-byte meanings remain blocked.
+
 This pass on 2026-09-28 follows the request to prioritize codec semantics before general platform glue. It examines the extra H.264 MVC state, the unused capability word, the additional VP6/VP8 info bytes and the five unnamed register ordinals. It also resolves two outstanding H.264 decompiler representation issues.
 
 ## H.264: API enable flag versus prefix-NAL latch

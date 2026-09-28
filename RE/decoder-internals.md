@@ -92,7 +92,7 @@ The last opaque PP scaling block is now named: fast-scaling support, horizontal/
 
 New source matches include framebuffer clipping, dithering selection, custom RGB masks, RGB transform coefficients, scaling setup and width/height validation. The coefficient-rounding workaround and the reference hardware's capabilities are detailed in [hardware.md](hardware.md).
 
-Twenty-five additional register semantics were recovered from callers, using an `MVD_HWIF_` prefix. Another source name, `HWIF_DEC_IRQ`, was confirmed from its exact triple and IRQ-clear callers. The later [parser/support pass](parser-support.md) identifies ordinal 19's data-discard alias, bringing the current total to 725 of 730 names. The five remaining ordinals are 8, 10, 128, 282 and 598. Field 579 is `MVD_HWIF_VP8_CONCEALMENT_MODE`: zero for ordinary decoding, one for the generated-motion-vector concealment path; encodings 2 and 3 remain unresolved.
+Twenty-five additional register semantics were recovered from callers, using an `MVD_HWIF_` prefix. Another source name, `HWIF_DEC_IRQ`, was confirmed from its exact triple and IRQ-clear callers. The later [parser/support pass](parser-support.md) identifies ordinal 19's data-discard alias, bringing that checkpoint to 725 of 730 names. The [definition follow-up](codec-definition-followup.md) adds abort-control ordinal 10, for 726 names; remaining ordinals are 8, 128, 282 and 598. Field 579 is `MVD_HWIF_VP8_CONCEALMENT_MODE`: zero for ordinary decoding, one for the generated-motion-vector concealment path; encodings 2 and 3 remain unresolved.
 
 ## Remaining work
 

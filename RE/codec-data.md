@@ -1,5 +1,7 @@
 # Codec constant tables and scratch-state correction
 
+**Later definition update:** [The source follow-up](codec-definition-followup.md) identifies capability `+0x18` as `jpegProgSupport` and register ordinal 10 as `HWIF_DEC_ABORT_E`. Earlier unresolved-name statements in this pass are historical. Four register ordinals and the VP6/VP8 constant-zero info-byte meanings remain blocked.
+
 This pass attributes 67 additional constant arrays: 62 full literal-byte matches and five register-selector arrays matched after translating source register names to MVD ordinals. It also rechecks seven previously named arrays. The function inventory remains 501 entries; data symbols are counted separately.
 
 ## Method and evidence

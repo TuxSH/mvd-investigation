@@ -1,5 +1,7 @@
 # Parser metadata and codec support
 
+**Later definition update:** [The source follow-up](codec-definition-followup.md) identifies capability `+0x18` as `jpegProgSupport` and register ordinal 10 as `HWIF_DEC_ABORT_E`. Earlier unresolved-name statements in this pass are historical. Four register ordinals and the VP6/VP8 constant-zero info-byte meanings remain blocked.
+
 This pass adds 30 function names/prototypes, bringing the inventory to 501. Twenty-eight additions have standalone Hantro source counterparts; two descriptive helpers correspond to register-setup sequences factored differently from the supplied source. An earlier SAR helper name was also corrected. Addresses are IDA virtual addresses. Service/hardware questions and platform glue remain last.
 
 ## VUI and HRD
