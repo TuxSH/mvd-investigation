@@ -8,6 +8,11 @@
 - [External-code identification and ABI differences](#source)
 - [G1 registers and effective capabilities](#hardware)
 - [The mvd:STD IPC interface](#std)
+- [Client API: full command IDs and prototypes](#client-api)
+  - [mvd:STD](#client-api-std)
+  - [l2b:u and l2b2:u](#client-api-l2b)
+  - [y2r2:u](#client-api-y2r2)
+  - [Lifecycle and convenience functions](#client-api-helpers)
 - [Postprocessor configuration and validation](#pp)
 - [Results, sizing and client memory](#memory)
 - [Decoder internals and hardware coordination](#decoders)
@@ -384,7 +389,9 @@ A process handle uses the two-word shared-handle descriptor (`0`, handle). Mappe
 
 ### Command table
 
-| ID | Request header | Meaning | Handler | Request after header | Reply after header |
+Client function declarations for every row are in the [full command ID and prototype reference](#client-api-std).
+
+| Command number | Full command ID / request header | Meaning | Handler | Request after header | Reply after header |
 |---|---|---|---|---|---|
 | `0x01` | `0x00010082` | Initialize | `0x112D88` | client work-buffer VA, size; process handle | result |
 | `0x02` | `0x00020000` | Shutdown | `0x112CBC` | — | result |
@@ -496,6 +503,195 @@ The lower PP routine can overwrite the output addresses in the supplied configur
 `21` replaces the output at PP's current display index if both current addresses match, with idle/combined/multibuffer checks. It is not inherently restricted to entry zero. The wrapper saves one extra replacement mapping on its first override only, so repeated overrides are not a general-purpose refresh of every VA mapping.
 
 See [results and memory chapter](#memory) for static implementation defects and [analysis method and corrections](#corrections) for verification limits.
+
+
+<a id="client-api"></a>
+
+## Client API: full command IDs and prototypes
+
+This is the complete client-facing C interface in the maintained [MVD](libctru-mvd/include/3ds/services/mvd.h), [L2B](libctru-mvd/include/3ds/services/l2b.h) and [Y2R2](libctru-mvd/include/3ds/services/y2r2.h) headers. Prototypes below reproduce those declarations, including parameter names, pointer types and `const` qualifiers. They are **client wrapper prototypes**, not sysmodule handler prototypes: the session/context pointer is implicit in the client, and process-handle descriptors are constructed by the wrapper.
+
+**Full command ID** below means the complete 32-bit IPC request header written to `cmdbuf[0]`, displayed with eight hexadecimal digits. It includes the command number and both payload-word counts:
+
+```c
+full_command_id = (command_number << 16) | (normal_words << 6) | translated_words;
+```
+
+For example, `MVDSTD_ProcessNALUnit` sends **`0x00080142`**, not just command number `0x08`: it carries five normal words and two translated words for the shared process handle. Output pointer arguments identify client destinations populated from the reply; they do not automatically contribute request words. The mapped PP configuration buffers are explicit exceptions, detailed in the [STD transport table](#std).
+
+The command number occupies the upper 16 bits, although these dispatchers normally select only its low byte. Request-header acceptance rules remain those described in the service chapters. The values below are the headers **actually constructed by the completed client**, rather than every header a permissive scalar dispatcher might accept. They are request headers, not reply headers. A client validation failure can return before any IPC is sent.
+
+The 101 direct command wrappers cover **124 service/command pairs**: 33 STD commands, 23 commands for each of the two L2B services, and 45 Y2R2 commands. All 14 additional public lifecycle/convenience/inline functions are listed separately with their underlying command sequences or an explicit “no command” designation.
+
+<a id="client-api-std"></a>
+
+### mvd:STD command prototypes
+
+These calls use the active `mvd:STD` handle. Use `mvdstdOpen` for an explicit codec/PP lifecycle, or the convenience initializer for standalone PP or H.264 with PP. Only one decoder family occupies the session at a time. `MVDSTD_InputFormat` names decoded pixels entering PP; it is not a codec selector.
+
+| Full command ID (`cmdbuf[0]`) | Client C prototype |
+|---|---|
+| `0x00010082` | `Result MVDSTD_Initialize(u32* work_buffer, u32 size);` |
+| `0x00020000` | `Result MVDSTD_Shutdown(void);` |
+| `0x00030300` | `Result MVDSTD_CalculateWorkBufSize(const MVDSTD_CalculateWorkBufSizeConfig* config, u32* size);` |
+| `0x000400C0` | `Result MVDSTD_CalculateImageSize(u32 width, u32 height, MVDSTD_PixelFormat format, u32* size);` |
+| `0x00050100` | `Result MVDSTD_H264Initialize(s8 no_output_reordering, s8 freeze_concealment, s8 display_smoothing, u32 reference_format);` |
+| `0x00060000` | `Result MVDSTD_H264EnableMvc(void);` |
+| `0x00070000` | `Result MVDSTD_H264Release(void);` |
+| `0x00080142` | `Result MVDSTD_ProcessNALUnit(u32 stream_vaddr, u32 stream_bus_address, u32 size, u32 picture_id, u32 skip_nonreference, MVDSTD_ProcessNALUnitOut* out);` |
+| `0x00090042` | `Result MVDSTD_H264NextPicture(s8 end_of_stream, MVDSTD_H264Picture* picture);` |
+| `0x000A0000` | `Result MVDSTD_H264GetInfo(MVDSTD_H264Info* info);` |
+| `0x000B0000` | `Result MVDSTD_H264Peek(MVDSTD_H264Picture* picture);` |
+| `0x000C0100` | `Result MVDSTD_Vp8Initialize(MVDSTD_Vp8Format format, s8 freeze_concealment, u32 buffer_count, u32 reference_format);` |
+| `0x000D0000` | `Result MVDSTD_Vp8Release(void);` |
+| `0x000E0202` | `Result MVDSTD_Vp8Decode(const MVDSTD_Vp8Input* input);` |
+| `0x000F0042` | `Result MVDSTD_Vp8NextPicture(s8 end_of_stream, MVDSTD_Vp8Picture* picture);` |
+| `0x00100000` | `Result MVDSTD_Vp8GetInfo(MVDSTD_Vp8Info* info);` |
+| `0x00110000` | `Result MVDSTD_Vp8Peek(MVDSTD_Vp8Picture* picture);` |
+| `0x001200C0` | `Result MVDSTD_Vp6Initialize(s8 freeze_concealment, u32 buffer_count, u32 reference_format);` |
+| `0x00130000` | `Result MVDSTD_Vp6Release(void);` |
+| `0x001400C2` | `Result MVDSTD_Vp6Decode(u32 stream_vaddr, u32 stream_bus_address, u32 size);` |
+| `0x00150042` | `Result MVDSTD_Vp6NextPicture(s8 end_of_stream, MVDSTD_Vp6Picture* picture);` |
+| `0x00160000` | `Result MVDSTD_Vp6GetInfo(MVDSTD_Vp6Info* info);` |
+| `0x00170000` | `Result MVDSTD_Vp6Peek(MVDSTD_Vp6Picture* picture);` |
+| `0x00180000` | `Result MVDSTD_PpInitialize(void);` |
+| `0x00190000` | `Result MVDSTD_PpRelease(void);` |
+| `0x001A0000` | `Result MVDSTD_PpGetResult(void);` |
+| `0x001B0040` | `Result MVDSTD_PpEnableCombinedMode(u8 decoder_type);` |
+| `0x001C0000` | `Result MVDSTD_PpDisableCombinedMode(void);` |
+| `0x001D0042` | `Result MVDSTD_GetConfig(MVDSTD_Config* config);` |
+| `0x001E0044` | `Result MVDSTD_SetConfig(MVDSTD_Config* config);` |
+| `0x001F0902` | `Result mvdstdSetupOutputBuffers(MVDSTD_OutputBuffersEntryList* entrylist, u32 bufsize);` |
+| `0x00200002` | `Result MVDSTD_GetNextOutput(MVDSTD_OutputBuffersEntry* output);` |
+| `0x00210100` | `Result mvdstdOverrideOutputBuffers(void* cur_outdata0, void* cur_outdata1, void* new_outdata0, void* new_outdata1);` |
+
+<a id="client-api-l2b"></a>
+
+### l2b:u and l2b2:u command prototypes
+
+**Every row applies to both services with the same full command ID.** Pass `L2B_ENGINE_0` for `l2b:u` or `L2B_ENGINE_1` for `l2b2:u`; the `engine` argument selects a local service handle and is not an additional IPC payload word. Open the selected service with `l2bInit(engine)`. DMA wrappers append the current-process shared handle internally.
+
+| Full command ID (`cmdbuf[0]`) | Client C prototype |
+|---|---|
+| `0x00010040` | `Result L2BU_SetInputFormat(L2B_Engine engine, L2BU_Format value);` |
+| `0x00020000` | `Result L2BU_GetInputFormat(L2B_Engine engine, L2BU_Format* value);` |
+| `0x00030040` | `Result L2BU_SetOutputFormat(L2B_Engine engine, L2BU_Format value);` |
+| `0x00040000` | `Result L2BU_GetOutputFormat(L2B_Engine engine, L2BU_Format* value);` |
+| `0x00050040` | `Result L2BU_SetTransferEndInterrupt(L2B_Engine engine, bool value);` |
+| `0x00060000` | `Result L2BU_GetTransferEndInterrupt(L2B_Engine engine, bool* value);` |
+| `0x00070000` | `Result L2BU_GetTransferEndEvent(L2B_Engine engine, Handle* event);` |
+| `0x00080102` | `Result L2BU_SetSending(L2B_Engine engine, const void* buffer, u32 size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x00090000` | `Result L2BU_IsDoneSending(L2B_Engine engine, bool* value);` |
+| `0x000A0102` | `Result L2BU_SetReceiving(L2B_Engine engine, void* buffer, u32 size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x000B0000` | `Result L2BU_IsDoneReceiving(L2B_Engine engine, bool* value);` |
+| `0x000C0040` | `Result L2BU_SetInputLineWidth(L2B_Engine engine, u16 value);` |
+| `0x000D0000` | `Result L2BU_GetInputLineWidth(L2B_Engine engine, u16* value);` |
+| `0x000E0040` | `Result L2BU_SetInputLines(L2B_Engine engine, u16 value);` |
+| `0x000F0000` | `Result L2BU_GetInputLines(L2B_Engine engine, u16* value);` |
+| `0x00100040` | `Result L2BU_SetAlpha(L2B_Engine engine, u16 value);` |
+| `0x00110000` | `Result L2BU_GetAlpha(L2B_Engine engine, u16* value);` |
+| `0x00120000` | `Result L2BU_StartConversion(L2B_Engine engine);` |
+| `0x00130000` | `Result L2BU_StopConversion(L2B_Engine engine);` |
+| `0x00140000` | `Result L2BU_IsBusyConversion(L2B_Engine engine, bool* value);` |
+| `0x00150080` | `Result L2BU_SetPackageParameter(L2B_Engine engine, const L2BU_ConversionParams* params);` |
+| `0x00160000` | `Result L2BU_GetPackageParameter(L2B_Engine engine, L2BU_ConversionParams* params);` |
+| `0x00170000` | `Result L2BU_PingProcess(L2B_Engine engine, u8* value);` |
+
+<a id="client-api-y2r2"></a>
+
+### y2r2:u command prototypes
+
+These calls use the `y2r2:u` handle acquired by `y2r2Init`. The separate upstream `Y2RU_*` interface targets `y2r:u`, not this service. The completed copy uses the `Y2R2U_*` namespace so both clients can coexist.
+
+`Y2R2U_SetConversionParams` sends **`0x002900C0`**: command `0x29`, three normal words, no translated words. The unmodified upstream `Y2RU_SetConversionParams` sends **`0x002901C0`**, advertising seven normal words although its structure copy fills only three. This writeup records both values explicitly; the table uses the completed MVD client's three-word request. The additional `GetConversionParams` command sends **`0x002D0000`** regardless of the oversized word count in its reply.
+
+| Full command ID (`cmdbuf[0]`) | Client C prototype |
+|---|---|
+| `0x00010040` | `Result Y2R2U_SetInputFormat(Y2R2U_InputFormat format);` |
+| `0x00020000` | `Result Y2R2U_GetInputFormat(Y2R2U_InputFormat* format);` |
+| `0x00030040` | `Result Y2R2U_SetOutputFormat(Y2R2U_OutputFormat format);` |
+| `0x00040000` | `Result Y2R2U_GetOutputFormat(Y2R2U_OutputFormat* format);` |
+| `0x00050040` | `Result Y2R2U_SetRotation(Y2R2U_Rotation rotation);` |
+| `0x00060000` | `Result Y2R2U_GetRotation(Y2R2U_Rotation* rotation);` |
+| `0x00070040` | `Result Y2R2U_SetBlockAlignment(Y2R2U_BlockAlignment alignment);` |
+| `0x00080000` | `Result Y2R2U_GetBlockAlignment(Y2R2U_BlockAlignment* alignment);` |
+| `0x00090040` | `Result Y2R2U_SetSpacialDithering(bool enable);` |
+| `0x000A0000` | `Result Y2R2U_GetSpacialDithering(bool* enabled);` |
+| `0x000B0040` | `Result Y2R2U_SetTemporalDithering(bool enable);` |
+| `0x000C0000` | `Result Y2R2U_GetTemporalDithering(bool* enabled);` |
+| `0x000D0040` | `Result Y2R2U_SetTransferEndInterrupt(bool should_interrupt);` |
+| `0x000E0000` | `Result Y2R2U_GetTransferEndInterrupt(bool* should_interrupt);` |
+| `0x000F0000` | `Result Y2R2U_GetTransferEndEvent(Handle* end_event);` |
+| `0x00100102` | `Result Y2R2U_SetSendingY(const void* src_buf, u32 image_size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x00110102` | `Result Y2R2U_SetSendingU(const void* src_buf, u32 image_size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x00120102` | `Result Y2R2U_SetSendingV(const void* src_buf, u32 image_size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x00130102` | `Result Y2R2U_SetSendingYUYV(const void* src_buf, u32 image_size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x00140000` | `Result Y2R2U_IsDoneSendingYUYV(bool* is_done);` |
+| `0x00150000` | `Result Y2R2U_IsDoneSendingY(bool* is_done);` |
+| `0x00160000` | `Result Y2R2U_IsDoneSendingU(bool* is_done);` |
+| `0x00170000` | `Result Y2R2U_IsDoneSendingV(bool* is_done);` |
+| `0x00180102` | `Result Y2R2U_SetReceiving(void* dst_buf, u32 image_size, s16 transfer_unit, s16 transfer_gap);` |
+| `0x00190000` | `Result Y2R2U_IsDoneReceiving(bool* is_done);` |
+| `0x001A0040` | `Result Y2R2U_SetInputLineWidth(u16 line_width);` |
+| `0x001B0000` | `Result Y2R2U_GetInputLineWidth(u16* line_width);` |
+| `0x001C0040` | `Result Y2R2U_SetInputLines(u16 num_lines);` |
+| `0x001D0000` | `Result Y2R2U_GetInputLines(u16* num_lines);` |
+| `0x001E0100` | `Result Y2R2U_SetCoefficients(const Y2R2U_ColorCoefficients* coefficients);` |
+| `0x001F0000` | `Result Y2R2U_GetCoefficients(Y2R2U_ColorCoefficients* coefficients);` |
+| `0x00200040` | `Result Y2R2U_SetStandardCoefficient(Y2R2U_StandardCoefficient coefficient);` |
+| `0x00210040` | `Result Y2R2U_GetStandardCoefficient(Y2R2U_ColorCoefficients* coefficients, Y2R2U_StandardCoefficient standardCoeff);` |
+| `0x00220040` | `Result Y2R2U_SetAlpha(u16 alpha);` |
+| `0x00230000` | `Result Y2R2U_GetAlpha(u16* alpha);` |
+| `0x00240200` | `Result Y2R2U_SetDitheringWeightParams(const Y2R2U_DitheringWeightParams* params);` |
+| `0x00250000` | `Result Y2R2U_GetDitheringWeightParams(Y2R2U_DitheringWeightParams* params);` |
+| `0x00260000` | `Result Y2R2U_StartConversion(void);` |
+| `0x00270000` | `Result Y2R2U_StopConversion(void);` |
+| `0x00280000` | `Result Y2R2U_IsBusyConversion(bool* is_busy);` |
+| `0x002900C0` | `Result Y2R2U_SetConversionParams(const Y2R2U_ConversionParams* params);` |
+| `0x002A0000` | `Result Y2R2U_PingProcess(u8* ping);` |
+| `0x002B0000` | `Result Y2R2U_DriverInitialize(void);` |
+| `0x002C0000` | `Result Y2R2U_DriverFinalize(void);` |
+| `0x002D0000` | `Result Y2R2U_GetConversionParams(Y2R2U_ConversionParams* params);` |
+
+<a id="client-api-helpers"></a>
+
+### Lifecycle and convenience function prototypes
+
+These functions do not each correspond to a new service command. The sequence column names only commands on the target MVD/L2B/Y2R2 service; service-manager requests and kernel SVCs used to acquire/close handles are separate. Sequences describe valid calls and the ordinary successful path, with the stated reference-count and mode conditions.
+
+| Client C prototype | Full command ID(s) or local operation | Behavior |
+|---|---|---|
+| `Result mvdstdOpen(void);` | None on `mvd:STD` | Acquires its handle through the service manager; allocates no work buffer and sends no STD command |
+| `void mvdstdClose(void);` | None on `mvd:STD` | Closes the raw handle; the caller must already have released codec/PP state and called Shutdown |
+| `Result mvdstdInit(MVDSTD_Mode mode, MVDSTD_InputFormat input_type, MVDSTD_OutputFormat output_type, u32 size, MVDSTD_InitStruct* initstruct);` | `0x00010082`, optional `0x00050100`, `0x00180000`, optional `0x001B0040` | First initialization: Initialize → H264Initialize in video mode → PpInitialize → attach H.264 in video mode. Repeated successful acquisition only increments the reference count; failure cleanup releases the components already initialized |
+| `void mvdstdExit(void);` | Optional `0x00090042` and `0x001C0000`; `0x00190000`; optional `0x00070000`; `0x00020000` | Last reference only: video mode drains with endOfStream=1 and detaches PP; release PP, release H.264 in video mode, then Shutdown and close/free client resources |
+| `Result mvdstdCalculateBufferSize(const MVDSTD_CalculateWorkBufSizeConfig* config, u32* size_out);` | `0x00030300` | Calls CalculateWorkBufSize; temporarily acquires and closes the service handle if necessary |
+| `void mvdstdGenerateDefaultConfig(MVDSTD_Config* config, u32 input_width, u32 input_height, u32 output_width, u32 output_height, u32* vaddr_colorconv_indata, u32* vaddr_outdata0, u32* vaddr_outdata1);` | None | Builds the client-side PP configuration and translates supplied VAs to bus addresses |
+| `Result mvdstdConvertImage(MVDSTD_Config* config);` | `0x001E0044` → `0x001A0000` | Sets PP configuration, then runs standalone PP if configuration succeeded |
+| `Result mvdstdProcessVideoFrame(void* inbuf_vaddr, size_t size, u32 flag, MVDSTD_ProcessNALUnitOut* out);` | `0x00080142` | Calls ProcessNALUnit with the new LINEAR input alias and a picture ID cycling through 0..17 |
+| `Result mvdstdRenderVideoFrame(MVDSTD_Config* config, bool wait);` | Optional `0x001E0044`; `0x00090042` | Sets configuration when non-NULL, then dequeues with endOfStream=0; wait=true repeats while a picture is returned |
+| `static inline bool mvdstdIsLegacyDecodeSuccess(Result result);` | None | Local inline result predicate; does not call the service |
+| `Result l2bInit(L2B_Engine engine);` | None on the selected L2B service | Acquires the selected service handle through the service manager; first-session driver setup is performed by the server |
+| `void l2bExit(L2B_Engine engine);` | None on the selected L2B service | Closes the handle at the last reference; server session closure performs DMA/register cleanup |
+| `Result y2r2Init(void);` | `0x002B0000` | First reference acquires y2r2:u and invokes DriverInitialize; later references do not reinitialize the driver |
+| `void y2r2Exit(void);` | `0x002C0000` | Last reference invokes DriverFinalize and closes the service handle |
+
+The correctly spelled Y2R2 aliases are object-like macros, not extra exported functions or commands. Their effective call signatures are shown here to make name-based lookup complete:
+
+| Alias call signature | Full command ID | Expands to |
+|---|---|---|
+| `Result Y2R2U_SetSpatialDithering(bool enable);` | `0x00090040` | `Y2R2U_SetSpacialDithering` |
+| `Result Y2R2U_GetSpatialDithering(bool* enabled);` | `0x000A0000` | `Y2R2U_GetSpacialDithering` |
+
+`MVD_CHECKNALUPROC_SUCCESS(x)` is a local function-like macro expanding to `mvdstdIsLegacyDecodeSuccess(x)`, returns `bool`, and evaluates `x` once. It has no IPC command ID.
+
+### Types, results and ownership at the client boundary
+
+The public record names in these prototypes correspond to the [STD output structures](#std), [284-byte PP configuration](#pp), [work-size request](#memory), and [auxiliary parameter blocks](#aux-services). The maintained headers provide the full field declarations, legacy aliases and per-argument documentation. `Result` is signed 32-bit, `Handle` is unsigned 32-bit, and the service/client ABI uses 32-bit pointers; enums in packed auxiliary records occupy explicit byte fields. `MVDSTD_OutputBuffersEntry` contains client pointers, whereas codec picture records store module VAs/bus addresses as explicit `u32` fields.
+
+Normal codec and PP success is often `MVD_STATUS_OK` (`0x17000`); lifecycle/sizing commands and auxiliary services can return raw zero. Do not equate every nonnegative result with populated metadata: info is copied only on `MVD_STATUS_OK`, and pictures only on `MVD_STATUS_PICTURE_READY`. Unwritten Peek fields and reply padding are sanitized by the completed client as documented in its headers. Event getters return caller-owned shared handles that must be closed. Optional STD output pointers may be NULL to discard a reply, while auxiliary output pointers are required. The client functions do not remove the server defects or hardware-validation limits discussed elsewhere in this writeup.
+
+The prototypes and complete header values in this chapter were cross-checked against the maintained `.h` declarations and `.c` request construction. This documentation update did not change the clients or claim a new console execution result.
 
 
 <a id="pp"></a>
@@ -1358,35 +1554,37 @@ Source attribution now covers mode probabilities, motion-vector entropy updates,
 
 ## L2B and Y2R2 IPC interfaces
 
+The tables include the complete request header sent by the maintained client. Full C prototypes appear in the [L2B/L2B2](#client-api-l2b) and [Y2R2](#client-api-y2r2) client reference; the handler argument columns below describe the internal server functions instead.
+
 ### l2b:u and l2b2:u
 
 Each operation has an implicit engine context. A scalar setter consumes one word, reading only the stated low byte/halfword. A scalar getter returns result plus a word whose low byte/halfword is written. Unwritten upper bytes should not be treated as data. Ordinary actions return one result word.
 
-| ID | Operation | Handler | Explicit handler arguments / data |
-|---|---|---|---|
-| `0x01` | SetInputFormat | `0x112290` | `MvdRgbFormat format` |
-| `0x02` | GetInputFormat | `0x11227C` | `MvdRgbFormat *format` |
-| `0x03` | SetOutputFormat | `0x1122BA` | `MvdRgbFormat format` |
-| `0x04` | GetOutputFormat | `0x1122A4` | `MvdRgbFormat *format` |
-| `0x05` | SetTransferEndInterrupt | `0x1124AE` | `s8 enable` |
-| `0x06` | GetTransferEndInterrupt | `0x1124A4` | `u8 *enable` |
-| `0x07` | GetTransferEndEvent | `0x112444` | `Handle *event` |
-| `0x08` | SetSending | `0x11216C` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x09` | IsDoneSending | `0x1123DE` | `u8 *done` |
-| `0x0A` | SetReceiving | `0x112242` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x0B` | IsDoneReceiving | `0x11244C` | `u8 *done` |
-| `0x0C` | SetInputLineWidth | `0x1123EE` | `s16 width` |
-| `0x0D` | GetInputLineWidth | `0x1123D4` | `u16 *width` |
-| `0x0E` | SetInputLines | `0x112272` | `s16 lines` |
-| `0x0F` | GetInputLines | `0x112268` | `u16 *lines` |
-| `0x10` | SetAlpha | `0x1124C2` | `u16 alpha` |
-| `0x11` | GetAlpha | `0x1124B8` | `u16 *alpha` |
-| `0x12` | StartConversion | `0x1122C8` | — |
-| `0x13` | StopConversion | `0x11229A` | — |
-| `0x14` | IsBusyConversion | `0x11230C` | `u8 *busy` |
-| `0x15` | SetPackageParameter | `0x11245C` | `MvdL2bParams *params` |
-| `0x16` | GetPackageParameter | `0x1123F8` | `MvdL2bParams *params` |
-| `0x17` | PingProcess | `0x112238` | `u8 *sessions` |
+| Command number | Full command ID | Operation | Handler | Explicit handler arguments / data |
+|---|---|---|---|---|
+| `0x01` | `0x00010040` | SetInputFormat | `0x112290` | `MvdRgbFormat format` |
+| `0x02` | `0x00020000` | GetInputFormat | `0x11227C` | `MvdRgbFormat *format` |
+| `0x03` | `0x00030040` | SetOutputFormat | `0x1122BA` | `MvdRgbFormat format` |
+| `0x04` | `0x00040000` | GetOutputFormat | `0x1122A4` | `MvdRgbFormat *format` |
+| `0x05` | `0x00050040` | SetTransferEndInterrupt | `0x1124AE` | `s8 enable` |
+| `0x06` | `0x00060000` | GetTransferEndInterrupt | `0x1124A4` | `u8 *enable` |
+| `0x07` | `0x00070000` | GetTransferEndEvent | `0x112444` | `Handle *event` |
+| `0x08` | `0x00080102` | SetSending | `0x11216C` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x09` | `0x00090000` | IsDoneSending | `0x1123DE` | `u8 *done` |
+| `0x0A` | `0x000A0102` | SetReceiving | `0x112242` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x0B` | `0x000B0000` | IsDoneReceiving | `0x11244C` | `u8 *done` |
+| `0x0C` | `0x000C0040` | SetInputLineWidth | `0x1123EE` | `s16 width` |
+| `0x0D` | `0x000D0000` | GetInputLineWidth | `0x1123D4` | `u16 *width` |
+| `0x0E` | `0x000E0040` | SetInputLines | `0x112272` | `s16 lines` |
+| `0x0F` | `0x000F0000` | GetInputLines | `0x112268` | `u16 *lines` |
+| `0x10` | `0x00100040` | SetAlpha | `0x1124C2` | `u16 alpha` |
+| `0x11` | `0x00110000` | GetAlpha | `0x1124B8` | `u16 *alpha` |
+| `0x12` | `0x00120000` | StartConversion | `0x1122C8` | — |
+| `0x13` | `0x00130000` | StopConversion | `0x11229A` | — |
+| `0x14` | `0x00140000` | IsBusyConversion | `0x11230C` | `u8 *busy` |
+| `0x15` | `0x00150080` | SetPackageParameter | `0x11245C` | `MvdL2bParams *params` |
+| `0x16` | `0x00160000` | GetPackageParameter | `0x1123F8` | `MvdL2bParams *params` |
+| `0x17` | `0x00170000` | PingProcess | `0x112238` | `u8 *sessions` |
 
 `07` returns result and a shared event-handle descriptor/address. `08` and `0A` consume address, size, signed 16-bit transfer unit and gap in four separate normal words, followed by the process-handle descriptor. Receive's direct IPC wrapper is `0x112242`; it calls DMA setup at `0x112318` and closes the process handle on success. The sender closes its handle in `0x11216C` on the active setup path.
 
@@ -1410,53 +1608,53 @@ The setter applies fields sequentially and returns at the first failing operatio
 
 The operation ordering matches libctru's Y2R client API through `2C`, with an additional `2D` getter. This is a comparison of interfaces, not evidence that Nintendo included libctru. Context arguments shown below are implicit and omitted from the table. Parameter blocks are packed as described afterwards.
 
-| ID | Operation | Handler | Explicit handler arguments / data |
-|---|---|---|---|
-| `0x01` | SetInputFormat | `0x113BB8` | `u8 format` |
-| `0x02` | GetInputFormat | `0x113BA0` | `u8 *format` |
-| `0x03` | SetOutputFormat | `0x113BF4` | `MvdRgbFormat format` |
-| `0x04` | GetOutputFormat | `0x113BD8` | `MvdRgbFormat *format` |
-| `0x05` | SetRotation | `0x1138DC` | `u8 rotation` |
-| `0x06` | GetRotation | `0x1138B0` | `u8 *rotation` |
-| `0x07` | SetBlockAlignment | `0x113D74` | `u8 alignment` |
-| `0x08` | GetBlockAlignment | `0x113D48` | `u8 *alignment` |
-| `0x09` | SetSpacialDithering | `0x114044` | `s8 enable` |
-| `0x0A` | GetSpacialDithering | `0x113F98` | `u8 *enable` |
-| `0x0B` | SetTemporalDithering | `0x1140D4` | `s8 enable` |
-| `0x0C` | GetTemporalDithering | `0x114064` | `u8 *enable` |
-| `0x0D` | SetTransferEndInterrupt | `0x114104` | `s8 enable` |
-| `0x0E` | GetTransferEndInterrupt | `0x1140F4` | `u8 *enable` |
-| `0x0F` | GetTransferEndEvent | `0x113FA8` | `Handle *event` |
-| `0x10` | SetSendingY | `0x113A70` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x11` | SetSendingU | `0x1138F0` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x12` | SetSendingV | `0x1139B0` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x13` | SetSendingYUYV | `0x113B78` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x14` | IsDoneSendingYUYV | `0x114074` | `u8 *done` |
-| `0x15` | IsDoneSendingY | `0x113E8C` | `u8 *done` |
-| `0x16` | IsDoneSendingU | `0x113E64` | `u8 *done` |
-| `0x17` | IsDoneSendingV | `0x113E78` | `u8 *done` |
-| `0x18` | SetReceiving | `0x113B30` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
-| `0x19` | IsDoneReceiving | `0x113FB8` | `u8 *done` |
-| `0x1A` | SetInputLineWidth | `0x113D88` | `s16 width` |
-| `0x1B` | GetInputLineWidth | `0x113D64` | `u16 *width` |
-| `0x1C` | SetInputLines | `0x113B68` | `s16 lines` |
-| `0x1D` | GetInputLines | `0x113B58` | `u16 *lines` |
-| `0x1E` | SetCoefficients | `0x114088` | `MvdY2rCoefficients coefficients` |
-| `0x1F` | GetCoefficients | `0x114054` | `MvdY2rCoefficients *coefficients` |
-| `0x20` | SetStandardCoefficient | `0x1140E4` | `u8 index` |
-| `0x21` | GetStandardCoefficient | `0x11422C` | `MvdY2rCoefficients *coefficients, u8 index` |
-| `0x22` | SetAlpha | `0x11424C` | `u16 alpha` |
-| `0x23` | GetAlpha | `0x11423C` | `u16 *alpha` |
-| `0x24` | SetDitheringWeightParams | `0x11418C` | `MvdY2rDitherWeights weights` |
-| `0x25` | GetDitheringWeightParams | `0x114114` | `MvdY2rDitherWeights *weights` |
-| `0x26` | StartConversion | `0x113C04` | — |
-| `0x27` | StopConversion | `0x113BC8` | — |
-| `0x28` | IsBusyConversion | `0x113C8C` | u8 output |
-| `0x29` | SetConversionParams | `0x113FCC` | `MvdY2rParams *params` |
-| `0x2A` | PingProcess | `0x1138CC` | `u8 *sessions` |
-| `0x2B` | DriverInitialize | `0x113C68` | — |
-| `0x2C` | DriverFinalize | `0x10FEF0` | — |
-| `0x2D` | GetConversionParams | `0x113EA0` | `MvdY2rParams *params` |
+| Command number | Full command ID | Operation | Handler | Explicit handler arguments / data |
+|---|---|---|---|---|
+| `0x01` | `0x00010040` | SetInputFormat | `0x113BB8` | `u8 format` |
+| `0x02` | `0x00020000` | GetInputFormat | `0x113BA0` | `u8 *format` |
+| `0x03` | `0x00030040` | SetOutputFormat | `0x113BF4` | `MvdRgbFormat format` |
+| `0x04` | `0x00040000` | GetOutputFormat | `0x113BD8` | `MvdRgbFormat *format` |
+| `0x05` | `0x00050040` | SetRotation | `0x1138DC` | `u8 rotation` |
+| `0x06` | `0x00060000` | GetRotation | `0x1138B0` | `u8 *rotation` |
+| `0x07` | `0x00070040` | SetBlockAlignment | `0x113D74` | `u8 alignment` |
+| `0x08` | `0x00080000` | GetBlockAlignment | `0x113D48` | `u8 *alignment` |
+| `0x09` | `0x00090040` | SetSpacialDithering | `0x114044` | `s8 enable` |
+| `0x0A` | `0x000A0000` | GetSpacialDithering | `0x113F98` | `u8 *enable` |
+| `0x0B` | `0x000B0040` | SetTemporalDithering | `0x1140D4` | `s8 enable` |
+| `0x0C` | `0x000C0000` | GetTemporalDithering | `0x114064` | `u8 *enable` |
+| `0x0D` | `0x000D0040` | SetTransferEndInterrupt | `0x114104` | `s8 enable` |
+| `0x0E` | `0x000E0000` | GetTransferEndInterrupt | `0x1140F4` | `u8 *enable` |
+| `0x0F` | `0x000F0000` | GetTransferEndEvent | `0x113FA8` | `Handle *event` |
+| `0x10` | `0x00100102` | SetSendingY | `0x113A70` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x11` | `0x00110102` | SetSendingU | `0x1138F0` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x12` | `0x00120102` | SetSendingV | `0x1139B0` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x13` | `0x00130102` | SetSendingYUYV | `0x113B78` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x14` | `0x00140000` | IsDoneSendingYUYV | `0x114074` | `u8 *done` |
+| `0x15` | `0x00150000` | IsDoneSendingY | `0x113E8C` | `u8 *done` |
+| `0x16` | `0x00160000` | IsDoneSendingU | `0x113E64` | `u8 *done` |
+| `0x17` | `0x00170000` | IsDoneSendingV | `0x113E78` | `u8 *done` |
+| `0x18` | `0x00180102` | SetReceiving | `0x113B30` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
+| `0x19` | `0x00190000` | IsDoneReceiving | `0x113FB8` | `u8 *done` |
+| `0x1A` | `0x001A0040` | SetInputLineWidth | `0x113D88` | `s16 width` |
+| `0x1B` | `0x001B0000` | GetInputLineWidth | `0x113D64` | `u16 *width` |
+| `0x1C` | `0x001C0040` | SetInputLines | `0x113B68` | `s16 lines` |
+| `0x1D` | `0x001D0000` | GetInputLines | `0x113B58` | `u16 *lines` |
+| `0x1E` | `0x001E0100` | SetCoefficients | `0x114088` | `MvdY2rCoefficients coefficients` |
+| `0x1F` | `0x001F0000` | GetCoefficients | `0x114054` | `MvdY2rCoefficients *coefficients` |
+| `0x20` | `0x00200040` | SetStandardCoefficient | `0x1140E4` | `u8 index` |
+| `0x21` | `0x00210040` | GetStandardCoefficient | `0x11422C` | `MvdY2rCoefficients *coefficients, u8 index` |
+| `0x22` | `0x00220040` | SetAlpha | `0x11424C` | `u16 alpha` |
+| `0x23` | `0x00230000` | GetAlpha | `0x11423C` | `u16 *alpha` |
+| `0x24` | `0x00240200` | SetDitheringWeightParams | `0x11418C` | `MvdY2rDitherWeights weights` |
+| `0x25` | `0x00250000` | GetDitheringWeightParams | `0x114114` | `MvdY2rDitherWeights *weights` |
+| `0x26` | `0x00260000` | StartConversion | `0x113C04` | — |
+| `0x27` | `0x00270000` | StopConversion | `0x113BC8` | — |
+| `0x28` | `0x00280000` | IsBusyConversion | `0x113C8C` | u8 output |
+| `0x29` | `0x002900C0` | SetConversionParams | `0x113FCC` | `MvdY2rParams *params` |
+| `0x2A` | `0x002A0000` | PingProcess | `0x1138CC` | `u8 *sessions` |
+| `0x2B` | `0x002B0000` | DriverInitialize | `0x113C68` | — |
+| `0x2C` | `0x002C0000` | DriverFinalize | `0x10FEF0` | — |
+| `0x2D` | `0x002D0000` | GetConversionParams | `0x113EA0` | `MvdY2rParams *params` |
 
 Scalar setters/getters and event return use the same transport conventions as L2B. DMA setup commands `10..13` and `18` consume four normal words (VA, size, signed 16-bit unit, signed 16-bit gap) and a shared process handle. Coefficients are eight 16-bit values (16 bytes), passed in four words for `1E` and returned after result by `1F`/`21`. Dithering weights are sixteen 16-bit values (32 bytes), passed in eight words by `24` and returned after result by `25`.
 
@@ -1470,7 +1668,7 @@ Scalar setters/getters and event return use the same transport conventions as L2
 | 9 | Unused byte |
 | 10 | u16 alpha |
 
-This matches the packed libctru structure; its client nevertheless advertises seven normal words in the command header. The module's scalar dispatcher does not use that count to determine how many bytes to copy here. Do not replace the packed byte fields with four C enum-sized words.
+This matches the packed upstream libctru Y2R structure. Its `Y2RU_SetConversionParams` client advertises seven normal words with header `0x002901C0`; the completed local `Y2R2U_SetConversionParams` client sends exactly three with `0x002900C0`, as shown in the tables. The module's scalar dispatcher does not use that count to determine how many bytes to copy here. Do not replace the packed byte fields with four C enum-sized words.
 
 `2D` reads current settings into the same structure. It compares all eight current coefficients against each of four standard tables, returning an index 0..3 on a match and **4 when none matches**. The padding byte at offset 9 is not written. The dispatcher advertises **eight normal reply words** while explicitly writing result plus only three data words; the remaining four words are not populated by this branch.
 
@@ -1489,81 +1687,81 @@ Unknown IDs return header `0x40` and result `0xD900182F`; malformed DMA requests
 
 ### l2b:u / l2b2:u
 
-| ID | Operation | Req N/T | Reply N/T | Written output |
-|---|---|---|---|---|
-| `01` | SetInputFormat | 1/0 | 1/0 | — |
-| `02` | GetInputFormat | 0/0 | 2/0 | 1 byte |
-| `03` | SetOutputFormat | 1/0 | 1/0 | — |
-| `04` | GetOutputFormat | 0/0 | 2/0 | 1 byte |
-| `05` | SetTransferEndInterrupt | 1/0 | 1/0 | — |
-| `06` | GetTransferEndInterrupt | 0/0 | 2/0 | 1 byte |
-| `07` | GetTransferEndEvent | 0/0 | 1/2 | shared event handle |
-| `08` | SetSending | 4/2 (exact) | 1/0 | — |
-| `09` | IsDoneSending | 0/0 | 2/0 | 1 byte |
-| `0A` | SetReceiving | 4/2 (exact) | 1/0 | — |
-| `0B` | IsDoneReceiving | 0/0 | 2/0 | 1 byte |
-| `0C` | SetInputLineWidth | 1/0 | 1/0 | — |
-| `0D` | GetInputLineWidth | 0/0 | 2/0 | 2 bytes |
-| `0E` | SetInputLines | 1/0 | 1/0 | — |
-| `0F` | GetInputLines | 0/0 | 2/0 | 2 bytes |
-| `10` | SetAlpha | 1/0 | 1/0 | — |
-| `11` | GetAlpha | 0/0 | 2/0 | 2 bytes |
-| `12` | StartConversion | 0/0 | 1/0 | — |
-| `13` | StopConversion | 0/0 | 1/0 | — |
-| `14` | IsBusyConversion | 0/0 | 2/0 | 1 byte |
-| `15` | SetPackageParameter | 2/0 | 1/0 | — |
-| `16` | GetPackageParameter | 0/0 | 5/0 | 8 bytes; 2 advertised words unwritten |
-| `17` | PingProcess | 0/0 | 2/0 | 1 byte |
+| Command number | Full command ID | Operation | Req N/T | Reply N/T | Written output |
+|---|---|---|---|---|---|
+| `01` | `0x00010040` | SetInputFormat | 1/0 | 1/0 | — |
+| `02` | `0x00020000` | GetInputFormat | 0/0 | 2/0 | 1 byte |
+| `03` | `0x00030040` | SetOutputFormat | 1/0 | 1/0 | — |
+| `04` | `0x00040000` | GetOutputFormat | 0/0 | 2/0 | 1 byte |
+| `05` | `0x00050040` | SetTransferEndInterrupt | 1/0 | 1/0 | — |
+| `06` | `0x00060000` | GetTransferEndInterrupt | 0/0 | 2/0 | 1 byte |
+| `07` | `0x00070000` | GetTransferEndEvent | 0/0 | 1/2 | shared event handle |
+| `08` | `0x00080102` | SetSending | 4/2 (exact) | 1/0 | — |
+| `09` | `0x00090000` | IsDoneSending | 0/0 | 2/0 | 1 byte |
+| `0A` | `0x000A0102` | SetReceiving | 4/2 (exact) | 1/0 | — |
+| `0B` | `0x000B0000` | IsDoneReceiving | 0/0 | 2/0 | 1 byte |
+| `0C` | `0x000C0040` | SetInputLineWidth | 1/0 | 1/0 | — |
+| `0D` | `0x000D0000` | GetInputLineWidth | 0/0 | 2/0 | 2 bytes |
+| `0E` | `0x000E0040` | SetInputLines | 1/0 | 1/0 | — |
+| `0F` | `0x000F0000` | GetInputLines | 0/0 | 2/0 | 2 bytes |
+| `10` | `0x00100040` | SetAlpha | 1/0 | 1/0 | — |
+| `11` | `0x00110000` | GetAlpha | 0/0 | 2/0 | 2 bytes |
+| `12` | `0x00120000` | StartConversion | 0/0 | 1/0 | — |
+| `13` | `0x00130000` | StopConversion | 0/0 | 1/0 | — |
+| `14` | `0x00140000` | IsBusyConversion | 0/0 | 2/0 | 1 byte |
+| `15` | `0x00150080` | SetPackageParameter | 2/0 | 1/0 | — |
+| `16` | `0x00160000` | GetPackageParameter | 0/0 | 5/0 | 8 bytes; 2 advertised words unwritten |
+| `17` | `0x00170000` | PingProcess | 0/0 | 2/0 | 1 byte |
 
 ### y2r2:u
 
-| ID | Operation | Req N/T | Reply N/T | Written output |
-|---|---|---|---|---|
-| `01` | SetInputFormat | 1/0 | 1/0 | — |
-| `02` | GetInputFormat | 0/0 | 2/0 | 1 byte |
-| `03` | SetOutputFormat | 1/0 | 1/0 | — |
-| `04` | GetOutputFormat | 0/0 | 2/0 | 1 byte |
-| `05` | SetRotation | 1/0 | 1/0 | — |
-| `06` | GetRotation | 0/0 | 2/0 | 1 byte |
-| `07` | SetBlockAlignment | 1/0 | 1/0 | — |
-| `08` | GetBlockAlignment | 0/0 | 2/0 | 1 byte |
-| `09` | SetSpacialDithering | 1/0 | 1/0 | — |
-| `0A` | GetSpacialDithering | 0/0 | 2/0 | 1 byte |
-| `0B` | SetTemporalDithering | 1/0 | 1/0 | — |
-| `0C` | GetTemporalDithering | 0/0 | 2/0 | 1 byte |
-| `0D` | SetTransferEndInterrupt | 1/0 | 1/0 | — |
-| `0E` | GetTransferEndInterrupt | 0/0 | 2/0 | 1 byte |
-| `0F` | GetTransferEndEvent | 0/0 | 1/2 | shared event handle |
-| `10` | SetSendingY | 4/2 (exact) | 1/0 | — |
-| `11` | SetSendingU | 4/2 (exact) | 1/0 | — |
-| `12` | SetSendingV | 4/2 (exact) | 1/0 | — |
-| `13` | SetSendingYUYV | 4/2 (exact) | 1/0 | — |
-| `14` | IsDoneSendingYUYV | 0/0 | 2/0 | 1 byte |
-| `15` | IsDoneSendingY | 0/0 | 2/0 | 1 byte |
-| `16` | IsDoneSendingU | 0/0 | 2/0 | 1 byte |
-| `17` | IsDoneSendingV | 0/0 | 2/0 | 1 byte |
-| `18` | SetReceiving | 4/2 (exact) | 1/0 | — |
-| `19` | IsDoneReceiving | 0/0 | 2/0 | 1 byte |
-| `1A` | SetInputLineWidth | 1/0 | 1/0 | — |
-| `1B` | GetInputLineWidth | 0/0 | 2/0 | 2 bytes |
-| `1C` | SetInputLines | 1/0 | 1/0 | — |
-| `1D` | GetInputLines | 0/0 | 2/0 | 2 bytes |
-| `1E` | SetCoefficients | 4/0 | 1/0 | — |
-| `1F` | GetCoefficients | 0/0 | 5/0 | 16 bytes |
-| `20` | SetStandardCoefficient | 1/0 | 1/0 | — |
-| `21` | GetStandardCoefficient | 1/0 | 5/0 | 16 bytes |
-| `22` | SetAlpha | 1/0 | 1/0 | — |
-| `23` | GetAlpha | 0/0 | 2/0 | 2 bytes |
-| `24` | SetDitheringWeightParams | 8/0 | 1/0 | — |
-| `25` | GetDitheringWeightParams | 0/0 | 9/0 | 32 bytes |
-| `26` | StartConversion | 0/0 | 1/0 | — |
-| `27` | StopConversion | 0/0 | 1/0 | — |
-| `28` | IsBusyConversion | 0/0 | 2/0 | 1 byte |
-| `29` | SetConversionParams | 3/0 | 1/0 | — |
-| `2A` | PingProcess | 0/0 | 2/0 | 1 byte |
-| `2B` | DriverInitialize | 0/0 | 1/0 | — |
-| `2C` | DriverFinalize | 0/0 | 1/0 | — |
-| `2D` | GetConversionParams | 0/0 | 8/0 | 12 bytes; 4 advertised words unwritten |
+| Command number | Full command ID | Operation | Req N/T | Reply N/T | Written output |
+|---|---|---|---|---|---|
+| `01` | `0x00010040` | SetInputFormat | 1/0 | 1/0 | — |
+| `02` | `0x00020000` | GetInputFormat | 0/0 | 2/0 | 1 byte |
+| `03` | `0x00030040` | SetOutputFormat | 1/0 | 1/0 | — |
+| `04` | `0x00040000` | GetOutputFormat | 0/0 | 2/0 | 1 byte |
+| `05` | `0x00050040` | SetRotation | 1/0 | 1/0 | — |
+| `06` | `0x00060000` | GetRotation | 0/0 | 2/0 | 1 byte |
+| `07` | `0x00070040` | SetBlockAlignment | 1/0 | 1/0 | — |
+| `08` | `0x00080000` | GetBlockAlignment | 0/0 | 2/0 | 1 byte |
+| `09` | `0x00090040` | SetSpacialDithering | 1/0 | 1/0 | — |
+| `0A` | `0x000A0000` | GetSpacialDithering | 0/0 | 2/0 | 1 byte |
+| `0B` | `0x000B0040` | SetTemporalDithering | 1/0 | 1/0 | — |
+| `0C` | `0x000C0000` | GetTemporalDithering | 0/0 | 2/0 | 1 byte |
+| `0D` | `0x000D0040` | SetTransferEndInterrupt | 1/0 | 1/0 | — |
+| `0E` | `0x000E0000` | GetTransferEndInterrupt | 0/0 | 2/0 | 1 byte |
+| `0F` | `0x000F0000` | GetTransferEndEvent | 0/0 | 1/2 | shared event handle |
+| `10` | `0x00100102` | SetSendingY | 4/2 (exact) | 1/0 | — |
+| `11` | `0x00110102` | SetSendingU | 4/2 (exact) | 1/0 | — |
+| `12` | `0x00120102` | SetSendingV | 4/2 (exact) | 1/0 | — |
+| `13` | `0x00130102` | SetSendingYUYV | 4/2 (exact) | 1/0 | — |
+| `14` | `0x00140000` | IsDoneSendingYUYV | 0/0 | 2/0 | 1 byte |
+| `15` | `0x00150000` | IsDoneSendingY | 0/0 | 2/0 | 1 byte |
+| `16` | `0x00160000` | IsDoneSendingU | 0/0 | 2/0 | 1 byte |
+| `17` | `0x00170000` | IsDoneSendingV | 0/0 | 2/0 | 1 byte |
+| `18` | `0x00180102` | SetReceiving | 4/2 (exact) | 1/0 | — |
+| `19` | `0x00190000` | IsDoneReceiving | 0/0 | 2/0 | 1 byte |
+| `1A` | `0x001A0040` | SetInputLineWidth | 1/0 | 1/0 | — |
+| `1B` | `0x001B0000` | GetInputLineWidth | 0/0 | 2/0 | 2 bytes |
+| `1C` | `0x001C0040` | SetInputLines | 1/0 | 1/0 | — |
+| `1D` | `0x001D0000` | GetInputLines | 0/0 | 2/0 | 2 bytes |
+| `1E` | `0x001E0100` | SetCoefficients | 4/0 | 1/0 | — |
+| `1F` | `0x001F0000` | GetCoefficients | 0/0 | 5/0 | 16 bytes |
+| `20` | `0x00200040` | SetStandardCoefficient | 1/0 | 1/0 | — |
+| `21` | `0x00210040` | GetStandardCoefficient | 1/0 | 5/0 | 16 bytes |
+| `22` | `0x00220040` | SetAlpha | 1/0 | 1/0 | — |
+| `23` | `0x00230000` | GetAlpha | 0/0 | 2/0 | 2 bytes |
+| `24` | `0x00240200` | SetDitheringWeightParams | 8/0 | 1/0 | — |
+| `25` | `0x00250000` | GetDitheringWeightParams | 0/0 | 9/0 | 32 bytes |
+| `26` | `0x00260000` | StartConversion | 0/0 | 1/0 | — |
+| `27` | `0x00270000` | StopConversion | 0/0 | 1/0 | — |
+| `28` | `0x00280000` | IsBusyConversion | 0/0 | 2/0 | 1 byte |
+| `29` | `0x002900C0` | SetConversionParams | 3/0 | 1/0 | — |
+| `2A` | `0x002A0000` | PingProcess | 0/0 | 2/0 | 1 byte |
+| `2B` | `0x002B0000` | DriverInitialize | 0/0 | 1/0 | — |
+| `2C` | `0x002C0000` | DriverFinalize | 0/0 | 1/0 | — |
+| `2D` | `0x002D0000` | GetConversionParams | 0/0 | 8/0 | 12 bytes; 4 advertised words unwritten |
 
 ### Output initialization limits
 
