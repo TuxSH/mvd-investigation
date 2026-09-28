@@ -95,6 +95,8 @@ The smallest useful timing capture uses a sentinel-filled output buffer and reco
 
 ## Inactive H.264 workaround and completion criteria
 
+The [consolidated workaround report](workarounds.md) documents the H.264 stream mutation and boundary accommodation, VP8 concealment entry conditions, ordinary freeze recovery, and the limits of source attribution.
+
 `InitWorkarounds` compares the low-halfword build against `0x2390` and clears the mode-zero workaround at `0x1058CE`. With target ID `0x67312398`, its applicability is settled: inactive. The lower-left VP8 concealment issue is likewise excluded from normal target execution by its zero support flag. No revision survey is required under the user's assumption.
 
 The exact historical H.264 defect remains unclassified. The supplied `source/common/workaround.c` lacks this H.264 extension. Targeted public searches for the build threshold, frame-number mask and G1 workaround did not locate an explanatory erratum or matching commentary. This missing historical information is separate from an unresolved active console behavior.

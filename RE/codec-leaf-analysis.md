@@ -48,6 +48,8 @@ NAL headers, access-unit state, macroblock payload and slice commands are typed 
 
 ## VP8 entropy recovery and concealment
 
+The consolidated [workaround and recovery report](workarounds.md) traces both concealment entry gates and the freeze-latch lifecycle, including its reset only after a successfully decoded key frame. It distinguishes target-reachable freeze recovery from the inactive motion-vector path.
+
 The boolean coder, VP7/VP8 frame-header parsers, segmentation, loop-filter adjustments, coefficient/motion-vector probability updates and VP7 scan preparation have source counterparts in `source/vp8/vp8hwd_bool.c`, `vp8hwd_headers.c` and `vp8hwd_probs.c`. Their names and prototypes are applied. Software VP7 parsing remains present even though the supplied reference capability state disables VP7 initialization.
 
 The final word of `MvdVp8Decoder`, at offset `0xA30`, is now `coeffProbsDecoded`. `DecodeVp8FrameHeader` (`0x1028C0`) sets it after coefficient-probability updates succeed, before the remaining skip/mode/motion-vector header fields. It does **not** mean that the whole frame header was successfully parsed.

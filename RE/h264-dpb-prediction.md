@@ -98,6 +98,8 @@ Each covers 16 luma blocks, four Cb blocks and four Cr blocks. The reference's C
 
 ## Frame-number bit-12 workaround
 
+The consolidated [workaround report](workarounds.md) adds the caller's non-RLC gate, exact framing-flag uses, source-attribution limits and single-revision applicability.
+
 `InitWorkarounds` (`0x105824`) is a counterpart of `source/common/workaround.c`, with an H.264 extension absent from that checkout. Decoder mode zero enables the H.264 workaround by default. For product `0x6731`, build `>= 0x2390` disables it. Thus the supplied **reference** ID `0x67312398` selects the disabled path. This is an inference from the provided dump and the binary gate, not a live register read.
 
 `H264DecInit` sets the frame-number mask to `0x1000` when enabled. The old four-word array in the container is now a 16-byte `MvdDecoderWorkarounds` union, with an H.264 view containing `enabled`, `reservedWord1`, `frameNumMask` and `annexBPatchActive`. The second H.264 word is initialized to zero but has no established H.264 role; it overlaps the MPEG start-code flag in the shared union. The MPEG and RV fields have source counterparts.

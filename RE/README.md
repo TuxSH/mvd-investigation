@@ -27,7 +27,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 9. [Recovered internal layouts](database-layouts.md) and [register-field inventory](register-fields.md)
 10. [Decoder internals, state and source matches](decoder-internals.md)
 11. [Codec leaf analysis, entropy and concealment](codec-leaf-analysis.md)
-12. [H.264 DPB, prediction and workaround](h264-dpb-prediction.md)
+12. [H.264 DPB and prediction](h264-dpb-prediction.md), and [decoder workarounds, concealment and freeze recovery](workarounds.md)
 13. [Parser metadata, scaling tables and support helpers](parser-support.md)
 14. [Codec constant tables and VP8 scratch storage](codec-data.md)
 15. [H.264 control-flow corrections](control-flow-corrections.md)
