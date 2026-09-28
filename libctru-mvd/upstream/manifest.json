@@ -1,0 +1,22 @@
+{
+  "repository": "https://github.com/devkitPro/libctru",
+  "commit": "0a376398d19505df3c236342827a3a72a42dd41e",
+  "files": [
+    {
+      "path": "libctru/include/3ds/services/mvd.h",
+      "sha256": "4162e5e89863ff60b3c531a0b7f848e65f7d124ce1077381189805f43c259971"
+    },
+    {
+      "path": "libctru/include/3ds/services/y2r.h",
+      "sha256": "38a6f01e4227f04a45c1915e30e19345373596e97b952c1adb160af4893f50c9"
+    },
+    {
+      "path": "libctru/source/services/mvd.c",
+      "sha256": "8a94d41ecce9e42e3cc5ff230bf14f35687f492940589c46ba067e631ec07c7d"
+    },
+    {
+      "path": "libctru/source/services/y2r.c",
+      "sha256": "3f98040c455f2804233215bb71a8297438bdd02357e43d3f6c89ec2cf50d6798"
+    }
+  ]
+}
