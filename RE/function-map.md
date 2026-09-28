@@ -4,6 +4,8 @@ Addresses are IDA virtual addresses. This inventory contains 501 applied functio
 
 The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111E64`) and `Y2RU_HandleCommands` (`0x11328C`) names were preserved, with context prototypes refined. Source-family confidence and ABI differences are documented in [external-code.md](external-code.md).
 
+The database currently contains 796 function entries. `0x115CDE`, formerly `sub_115CDE`, is now an internal epilogue label belonging to `h264bsdDecode`, not an additional function. See [control-flow-corrections.md](control-flow-corrections.md). The correction does not add an inventory row.
+
 | Address | Function | Applied declaration |
 |---|---|---|
 | `0x1012B0` | `AllocateAsicBuffers` | `u32 AllocateAsicBuffers(MvdH264Container *decoder,MvdH264AsicBuffers *buffers,u32 picSizeInMbs)` |

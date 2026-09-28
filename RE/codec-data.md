@@ -145,3 +145,48 @@ The six literal candidates without full matches were `stuffingTable`, `h264bsdQp
 All 74 selected tables (69 literal and five selector arrays) were read back from IDA with the expected name, address and size. The scratch union and frame variable both read back as 128 bytes, and regenerated pseudocode confirms both capability-call destinations. Initial local-type application did not resize the old variable; declaring the correct stack span did, and the final result was checked. The function inventory remains 501, with 266 `sub_*` names in the database; sampled remaining functions are predominantly platform/service/runtime code, but the remainder is not fully classified.
 
 This pass changes analysis annotations and documentation only. No decoder execution, MMIO writes, firmware-byte patches or reference-source edits were performed. Remaining work includes constants outside this scan, unresolved field semantics and custom-code readability. Deferred service/hardware questions remain after those tasks, with platform/SDK/runtime attribution last.
+
+## Continuation: small, structured and codec-selector tables
+
+A subsequent pass adds 19 arrays covering 980 bytes, bringing the two data passes to 86 new arrays covering 15,566 bytes. This extends the earlier scan to small initializers, two explicitly checked record layouts, and VP6/VP8 register-name macros. It does not count the seven already named arrays rechecked above as new work.
+
+| Address | Applied declaration | Bytes | Source |
+|---|---|---:|---|
+| `0x11A204` | `const MvdMemAccess memStatsPerFormat[13]` | 156 | `common/refbuffer.c` |
+| `0x11C938` | `const MvdHwIf Vp6ScanTblRegId[64]` | 256 | `vp6/vp6hwd_asic.c` |
+| `0x11CA38` | `const MvdHwIf Vp6TapRegId[8][4]` | 128 | `vp6/vp6hwd_asic.c` |
+| `0x11CAB8` | `const MvdHwIf Vp8ScanTblRegId[16]` | 64 | `vp8/vp8hwd_asic.c` |
+| `0x11CAF8` | `const MvdHwIf Vp8DctBaseId[8]` | 32 | `vp8/vp8hwd_asic.c` |
+| `0x11CB18` | `const MvdHwIf Vp8DctStartBit[8]` | 32 | `vp8/vp8hwd_asic.c` |
+| `0x11CB38` | `const MvdHwIf Vp8TapRegId[8][4]` | 128 | `vp8/vp8hwd_asic.c` |
+| `0x11EA06` | `const u8 VP6HW_DefaultMvShortProbs[2][7]` | 14 | `vp6/vp6gconst.c` |
+| `0x11EA24` | `const u8 VP6HW_DefaultIsShortProbs[2]` | 2 | `vp6/vp6gconst.c` |
+| `0x11EA26` | `const u8 VP6HW_DefaultSignProbs[2]` | 2 | `vp6/vp6gconst.c` |
+| `0x11F504` | `const LINE_EQ VP6HWDcNodeEqs[5][3]` | 120 | `vp6/vp6gconst.c` |
+| `0x11FEAA` | `const u8 runBefore_1[2]` | 2 | `h264high/h264hwd_cavlc.c` |
+| `0x11FEAC` | `const u8 totalZeros_14[4]` | 4 | `h264high/h264hwd_cavlc.c` |
+| `0x11FEB0` | `const u8 runBefore_3[4]` | 4 | `h264high/h264hwd_cavlc.c` |
+| `0x11FEB4` | `const u8 runBefore_2[4]` | 4 | `h264high/h264hwd_cavlc.c` |
+| `0x11FEB8` | `const u8 totalZeros_13[8]` | 8 | `h264high/h264hwd_cavlc.c` |
+| `0x11FEC0` | `const u8 runBefore_6[8]` | 8 | `h264high/h264hwd_cavlc.c` |
+| `0x11FEC8` | `const u8 runBefore_5[8]` | 8 | `h264high/h264hwd_cavlc.c` |
+| `0x11FED0` | `const u8 runBefore_4[8]` | 8 | `h264high/h264hwd_cavlc.c` |
+
+The `Vp6`/`Vp8` prefixes distinguish source-local arrays with the same spelling. Their source names are `ScanTblRegId`, `TapRegId`, `DctBaseId` and `DctStartBit`. The six selector tables contain 160 words and match after resolving `SCAN`, `TAP`, `BASE`, `OFFSET` and the `HWIF_VP6HWPART2_BASE = HWIF_RLC_VLC_BASE` alias. This last alias explains ordinal 211 in `Vp8DctBaseId[0]`; it does not identify any of the five unresolved register fields.
+
+### Consumer checks and layout recovery
+
+* `DecodeTotalZeros` (`0x1024F8`) selects the eight-byte `totalZeros_13` and four-byte `totalZeros_14` arrays for their corresponding cases. `DecodeRunBefore` (`0x102258`) selects `runBefore_1..6` by `zerosLeft`. The two-byte `runBefore_1` pattern occurs at four addresses, but its case-1 read at `0x102278` identifies `0x11FEAA`.
+* `VP6HWDecodeProbUpdates` (`0x10A01C`) copies two bytes to `IsMvShortProb`, 14 to `MvShortProbs`, and two to `MvSignProbs` at `0x10A068`, `0x10A074` and `0x10A080`. The sign-default bytes also occur at hundreds of unrelated positions; the copy source is decisive.
+* `memStatsPerFormat` uses the existing 12-byte `MvdMemAccess` layout, matching source `memAccess_t`: three `u32` members `latency`, `nonseq` and `seq`. Its 13 rows match all 156 bytes. `InitMemAccess` (`0x1057DC`) indexes it by decoder mode and halves the sequential count for a 64-bit bus. These are source model constants, not measured MVD bus timings.
+* Source `LINE_EQ` is two signed 32-bit members `M` and `C`, at offsets 0/4, with size 8. The 5×3 array contains 120 bytes, including negative intercepts. `VP6HWConfigureContexts` (`0x109B30`) now displays the observed calculation as `((DcProbs[11*i+k] * VP6HWDcNodeEqs[k][j].M + 128) >> 8) + VP6HWDcNodeEqs[k][j].C`, clamped to 1..255. The loop covers two planes, three contexts and five nodes.
+* VP6 and VP8 have separate copies of the identical tap-selector table. `VP6HwdAsicInitPicture` selects `0x11CA38`; `VP8HwdAsicInitPicture` selects `0x11CB38`. The 16-entry VP8 scan table also matches the prefix of the 64-entry VP6 table; their consumers distinguish the placements. Index zero in both scan arrays is an unused zero placeholder, not an assertion of `HWIF_DEC_PIC_INF` semantics.
+* `VP8HwdAsicStrmPosUpdate` (`0x10BEB0`) selects the coefficient partition's aligned bus address through `Vp8DctBaseId[i]` and its bit offset through `Vp8DctStartBit[i]`. Typing the two adjacent arrays removes the misleading old `dword_11CAF8[i+8]` expression for the second table.
+
+The candidate search also encountered partially initialized automatic arrays such as `distrVer` and `newOrder`. Their explicit `{0}` is not a complete four-byte constant table: declared dimensions and storage use exclude them. Short-pattern matches alone were not promoted to symbols. The PP source scan produced no additional accepted literal arrays under this method.
+
+### Remaining VP8 pointer alias
+
+In `VP8HwdAsicInitPicture`, the stack slot at `SP+0x88` holds `mcFilter[j]` at `0x10C57C`, then `&decoder->refBufferCtrl` at `0x10C68A`. Hex-Rays merges these lifetimes under a `MvdRefBuffer *` local and renders a filter read at `0x10C594` as `refbu->decModeMbWeights[v26+1]`. Its actual value is `mcFilter[j][v26+1]`, corroborated by the source loop. Comments mark both lifetimes; this remaining display artifact does not mean the constant table is a reference-buffer object.
+
+All 19 final symbols were read back with the expected size and name; the adjacent DCT arrays required recreating the start-bit item after splitting the previous larger item. Regenerated pseudocode confirms the structured cost/equation accesses and separate DCT selectors. `LINE_EQ` and `MvdMemAccess` read back as 8 and 12 bytes. A separate [H.264 control-flow correction](control-flow-corrections.md) removes one false function entry: the current database has 796 functions, of which 265 retain `sub_*` names. The documented function inventory remains 501.
