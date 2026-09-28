@@ -71,7 +71,7 @@ Let `M = ceil(width/16) * ceil(height/16)` and `Y = 384*M`. The implementation u
 
 These formulas describe the code rather than assigning unproven codec meanings to candidate A/B. The flag test enabling the level path is **any nonzero byte**, not only bit zero. The final fixed 4040-byte allowance is added after doubling.
 
-The 17-entry table at `0x11A0D0` stores index, maximum frame macroblocks, maximum DPB macroblocks. The index is not range-checked by the sizing helper.
+The 17-entry table at `0x11A0D0`, now typed as `g_mvdH264LevelLimits`, stores index, maximum frame macroblocks, maximum DPB macroblocks in 12-byte `MvdH264LevelLimit` records. The index is not range-checked by the sizing helper.
 
 | Index | maxFrameMbs | maxDpbMbs |
 |---:|---:|---:|

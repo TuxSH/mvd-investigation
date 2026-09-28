@@ -190,3 +190,21 @@ The candidate search also encountered partially initialized automatic arrays suc
 In `VP8HwdAsicInitPicture`, the stack slot at `SP+0x88` holds `mcFilter[j]` at `0x10C57C`, then `&decoder->refBufferCtrl` at `0x10C68A`. Hex-Rays merges these lifetimes under a `MvdRefBuffer *` local and renders a filter read at `0x10C594` as `refbu->decModeMbWeights[v26+1]`. Its actual value is `mcFilter[j][v26+1]`, corroborated by the source loop. The subsequent [readability pass](codec-readability.md) separates the lifetimes into `filterRow` and `refbu` and also splits the tap-table pointer from the later reference-picture ID. Fresh pseudocode now reads `filterRow[v26+1]`.
 
 All 19 final symbols were read back with the expected size and name; the adjacent DCT arrays required recreating the start-bit item after splitting the previous larger item. Regenerated pseudocode confirms the structured cost/equation accesses and separate DCT selectors. `LINE_EQ` and `MvdMemAccess` read back as 8 and 12 bytes. A separate [H.264 control-flow correction](control-flow-corrections.md) removes one false function entry: the current database has 796 functions, of which 265 retain `sub_*` names. The documented function inventory remains 501.
+
+## Attribution-coverage continuation
+
+A reference audit of all 501 documented functions adds two arrays omitted by the earlier initializer scans: the 32-byte `h264ScalingListDefaults` at `0x11E554` and the 204-byte `g_mvdH264LevelLimits` at `0x11A0D0`. The former is the source-local pointer initializer in `ScalingList`; the latter gains a descriptive 12-byte record type for the previously documented MVD sizing table. The three data passes now total **88 newly annotated arrays and 15,802 bytes**. Full consumer evidence, the corrected stack pointer array and seven deferred platform data heads are in [attribution-coverage.md](attribution-coverage.md).
+
+### Disposition of earlier nonmatches
+
+Searching identifiers across the supplied `source/` tree gives more specific evidence than merely suggesting a source-version difference:
+
+| Nonmatching source table | Source-reference disposition |
+|---|---|
+| `stuffingTable` | Its check in `h264high/legacy/h264hwd_util.c:155` is under `HANTRO_PEDANTIC_MODE`; the recovered trailing-bits routine omits that pattern check |
+| `h264bsdQpC` | Definition and extern declaration only; no consumer found in this source tree |
+| `VP6HWCoeffToBand`, `VP6HWCoeffToHuffBand` | Uses in `vp6/vp6scanorder.c:106,112` are inside `#if 0` |
+| `VP6HWMode2Frame`, `VP6HW_BilinearFilters` | Definitions only; no consumer found in this source tree |
+| `refFieldMode`, `refTopc` | Definitions only in `h264high/h264hwd_asic.c`; no consumer found in this source tree |
+
+These observations are consistent with unused-data elimination or configuration differences. They do not prove the exact compiler/linker settings, establish absence of a codec feature, or justify assigning a different equal-prefix table. They close the immediate source-consumer follow-up for these eight nonmatches.
