@@ -749,3 +749,37 @@ These values occupy the slots only during the pointer-storage lifetime. The capa
 | `0x14` | `firstCallFlag` | `u32` | 4 |
 | `0x18` | `newPicture` | `u32` | 4 |
 | `0x1C` | `currImage` | `MvdH264Image` | 16 |
+
+
+## Platform, SDK and runtime layouts
+
+The final platform pass adds these instruction-derived analysis types. They describe this binary's accesses and do not assert original SDK class names. [platform-sdk-runtime.md](platform-sdk-runtime.md) and [heap-runtime.md](heap-runtime.md) explain their fields and ownership.
+
+| Type | Size | Principal fields |
+|---|---:|---|
+| `MvdSdkRecursiveLock` | 12 | Signed counter, owner TLS pointer, recursion depth |
+| `MvdSdkScopedRecursiveLock` | 4 | Lock pointer |
+| `MvdSdkAddressWaitState` | 8 | Wait value and auxiliary word |
+| `MvdSdkCompareExchangeContext` | 12 | Expected, desired, observed |
+| `MvdRuntimeEmergencyBuffer` | 136 | Busy byte; 128-byte payload at +8 |
+| `MvdRuntimeThreadState` | 32 | Termination callbacks, handler, flags and optional emergency buffer |
+| `MvdSdkTlsPrefix` | 128 | Runtime pointer +0x5C, inline state +0x60; IPC begins after this view |
+| `MvdSdkFatalErrorInfo` | 128 | Explicit one-byte type, result, PC, process/title IDs, 96-byte payload |
+| `MvdSdkThreadHandle` | 8 | Owned handle and joined/auxiliary bytes |
+| `MvdSdkEventObject` | 12 | Vtable, handle, state byte |
+| `MvdSdkMemberCallback` | 28 | Existing 16-byte notification prefix, object, function word and encoded adjustment |
+| `MvdUnsignedDivModResult` | 8 | Quotient in R0, remainder in R1; decompiler limitation documented |
+| `MvdServiceSessionSlot` | 8 | Service index and context pointer |
+| `MvdServiceDispatchTable` | 32 | Four function pointers followed by four context pointers |
+| `MvdSdkIntrusiveList` | 12 | First, last, 16-bit count and embedded-link offset |
+| `MvdSdkHeapHeader` | 36 | Signature, sibling links, child list, bounds, options |
+| `MvdHeapBlock` | 16 | Signature, packed metadata, payload size, previous/next |
+| `MvdHeapBlockList` | 8 | First/last block pointers |
+| `MvdExpandedHeapState` | 24 | Free/used lists, group, fit policy and padding policy |
+| `MvdExpandedHeap` | 60 | Common header followed by expanded state |
+| `MvdSdkHeapObject` | 100 | Object prefix, expanded heap, count and recursive lock |
+| `MvdSdkHeapInterface` | 12 | Vtable, heap pointer and flags |
+| `MvdHeapRange` | 8 | Begin/end pointers |
+| `MvdSdkAddressArena` | 24 | Bounds, unnamed word and recursive lock |
+
+The member-callback prefix was reconciled with the existing `NotificationEntry`/`NotificationEntryListNode` types rather than leaving its list/ID words unnamed. Heap and SDK scalar stack locals are explicitly typed where Hex-Rays had inferred arrays spanning saved registers. Loaded codec structure sizes and MMIO layouts are unchanged.

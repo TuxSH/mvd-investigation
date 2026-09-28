@@ -53,3 +53,10 @@ The helper uses the low eleven-bit width and height fields; it does not combine 
 `MvdBusToClientVirtualForCache` at `0x101768` adds `0x10000000` when either `address >= 0x20000000` **or** the unsigned sum `address + size <= 0x30000000`; otherwise it returns zero. The OR is present in the branch instructions. This helper is therefore not a strict validation of the expected bus-address interval, and its behavior should not be rewritten as an AND in reconstructed code.
 
 Other client-copy, DMA and wrapper cache-maintenance paths are described in [memory-and-results.md](memory-and-results.md). Their existence should not be confused with this additional flush immediately before PP enable.
+
+
+## SDK/runtime continuation
+
+The [platform/SDK/runtime analysis](platform-sdk-runtime.md) now resolves the surrounding initialization, TLS, SRV, error reporting, handles and synchronization. In particular, DWL hardware reservation uses `MvdSdkTryLockRecursiveLock` (`0x111C9E`), a nonblocking try-lock. The former command-buffer helper returns the TLS base; its IPC callers add `0x80`. The full result-policy and fatal-wait behavior is documented separately from decoder return codes.
+
+[Heap analysis](heap-runtime.md) was performed last. It recovers the 1 MiB process-heap setup, expanded-heap metadata and first-fit allocation, distinguishing this process allocator from client work-buffer linear allocation. The final database has no remaining `sub_*` names; exact SDK/runtime source versions and the noted decompiler/hardware limits remain qualified.

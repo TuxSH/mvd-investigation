@@ -1,6 +1,6 @@
 # Function and constant attribution coverage
 
-**Later update:** the [auxiliary-driver pass](auxiliary-drivers.md) names 95 of the 265 entries triaged below, leaving 170 unnamed. It also resolves five of the seven deferred data heads: interrupt IDs, two process pseudo-handles and both Y2R coefficient tables. Current names and prototypes are in [function-map.md](function-map.md). This document otherwise records the earlier audit checkpoint.
+**Current update:** the [platform/SDK/runtime pass](platform-sdk-runtime.md), with [heap analysis last](heap-runtime.md), closes all 170 entries left after the auxiliary-driver pass and resolves the last two deferred data heads. The database now has 800 functions and zero `sub_*` names. Exact SDK/runtime source identities remain qualified. The sections below retain the earlier audit checkpoint.
 
 The remaining-function sweep found no additional routine that this pass can confidently name as Hantro codec code. All 265 remaining `sub_*` entries were decompiled and reviewed with their reference context. They fall into service/driver, SDK, startup and runtime work queues, detailed in [remaining-functions.md](remaining-functions.md). This is a classification of existing entries, not proof that every instruction or indirect target has been identified.
 
@@ -36,10 +36,10 @@ These seven heads remain in the platform queue. Their current IDA item sizes are
 |---|---|---|
 | `0x11A000` | L2B interrupt-ID bytes `45 46`; initial DMA-ID classification corrected by BindInterrupt consumers | Resolved as `g_l2bInterruptIds[2]` in the driver pass |
 | `0x11A004` | L2B process pseudo-handle | Resolved as `const Handle g_l2bCurrentProcessPseudoHandle`, value `0xFFFF8001` |
-| `0x11A014` | Shared service/decoder-wrapper references into zero-valued storage | Determine whether this is a sentinel, initializer or several adjacent objects |
+| `0x11A014` | Zero handle passed by service/decoder wrappers | Resolved as a separate four-byte `g_mvdNoClientProcessHandle`; no adjacent extent claimed |
 | `0x11A088` | Y2R process pseudo-handle | Resolved as `const Handle g_y2rCurrentProcessPseudoHandle`, value `0xFFFF8001` |
 | `0x11A08C` | Y2R coefficient initialization bytes | Resolved as the 64-byte standard-coefficient matching table |
-| `0x11A19C` | DWL/platform memory paths; first word `0xFFFF8001` | Distinguish pseudo-handle from adjacent data |
+| `0x11A19C` | DWL/platform memory paths; first word `0xFFFF8001` | Resolved as four-byte `g_mvdCurrentProcessPseudoHandle`; adjacent `0x11A1A0` is a separate zero handle |
 | `0x11A1A4` | `MvdY2rReadStandardCoefficients` | Resolved as four 16-byte standard-coefficient presets |
 
 Two additional interior-reference groups belong to already typed `mcFilter` (`0x11CBB8`) and `vp71FeatureBits` (`0x11D2C8`). They are not new attribution gaps.

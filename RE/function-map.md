@@ -1,19 +1,112 @@
 # Applied function names and prototypes
 
-Addresses are IDA virtual addresses. This inventory contains 598 applied functions. `MVDSTD_`, `MVDL2B_`, `MVDY2R_` and `Mvd` names describe recovered service, platform or branch-specific codec behavior. Hantro names identify source counterparts, except the explicitly suffixed `PPChangeOutputBuffer_MVD`. DWL API names identify the abstraction boundary; their implementations use Nintendo memory/interrupt services. SVC names identify verified syscall veneers. `ceilf`/`floorf` are runtime semantic identifications with recovered VFP calling conventions.
+Addresses are IDA virtual addresses. This inventory contains 786 applied functions. `MVDSTD_`, `MVDL2B_`, `MVDY2R_` and `Mvd` names describe recovered service, platform or branch-specific codec behavior. Hantro names identify source counterparts, except the explicitly suffixed `PPChangeOutputBuffer_MVD`. DWL API names identify the abstraction boundary; their implementations use Nintendo memory/interrupt services. SVC names identify verified syscall veneers. `ceilf`/`floorf` are runtime semantic identifications with recovered VFP calling conventions.
 
 The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111E64`) and `Y2RU_HandleCommands` (`0x11328C`) names were preserved, with context prototypes refined. Source-family confidence and ABI differences are documented in [external-code.md](external-code.md).
 
-The database currently contains 796 function entries. `0x115CDE`, formerly `sub_115CDE`, is now an internal epilogue label belonging to `h264bsdDecode`, not an additional function. See [control-flow-corrections.md](control-flow-corrections.md). The correction does not add an inventory row.
+The database currently contains 800 function entries, including four functions recovered by the platform pass. `0x115CDE`, formerly `sub_115CDE`, is now an internal epilogue label belonging to `h264bsdDecode`, not an additional function. See [control-flow-corrections.md](control-flow-corrections.md). The correction does not add an inventory row.
 
 The auxiliary-driver continuation adds 95 names and refines service/driver ABIs; the two previously named auxiliary dispatchers now also have explicit inventory rows. See [auxiliary-drivers.md](auxiliary-drivers.md).
 
+The [platform/SDK/runtime pass](platform-sdk-runtime.md), followed by the [heap pass](heap-runtime.md), closes the previous 170-entry unnamed queue, recovers four additional functions, and corrects existing SDK/runtime names and ABIs. SDK and runtime names describe behavior unless a source counterpart is explicitly established.
+
 | Address | Applied name | Prototype |
 |---|---|---|
+| `0x100000` | `MvdRuntimeProcessEntry` | `void __noreturn MvdRuntimeProcessEntry(void)` |
+| `0x100024` | `MvdRuntimeClearBss` | `void MvdRuntimeClearBss(void)` |
+| `0x100048` | `MvdRuntimeEnterMain` | `void MvdRuntimeEnterMain(void)` |
+| `0x100054` | `MvdRuntimeRunAbsoluteInitializers` | `void MvdRuntimeRunAbsoluteInitializers(void)` |
+| `0x100070` | `MvdRuntimeInitializeLocale` | `void MvdRuntimeInitializeLocale(void)` |
+| `0x1000A8` | `MvdRuntimeInitializeProcessHeap` | `MvdSdkHeapInterface *MvdRuntimeInitializeProcessHeap(void)` |
+| `0x1000C8` | `MvdSdkInitialize` | `void MvdSdkInitialize(void)` |
+| `0x1000D4` | `MvdSdkInitializeKernelRuntime` | `void MvdSdkInitializeKernelRuntime(void)` |
+| `0x1000F0` | `MvdSdkResizeProcessHeap` | `Result MvdSdkResizeProcessHeap(u32 newSize)` |
+| `0x10013C` | `MvdSdkCreateProcessHeap` | `MvdSdkHeapInterface *MvdSdkCreateProcessHeap(void *region, u32 size)` |
+| `0x1001A8` | `main` | `void main(void)` |
+| `0x100454` | `MvdSdkGetOrCreateAddressArbiter` | `Handle MvdSdkGetOrCreateAddressArbiter(void)` |
+| `0x100478` | `MvdSdkInitializeProcessInfo` | `void MvdSdkInitializeProcessInfo(void)` |
+| `0x100480` | `MvdSdkInitializeLinearAddressArena` | `void MvdSdkInitializeLinearAddressArena(void)` |
+| `0x100498` | `MvdSdkInitializeSharedAddressArena` | `void MvdSdkInitializeSharedAddressArena(void)` |
+| `0x1004AC` | `MvdRuntimeInitializeThread` | `void MvdRuntimeInitializeThread(void)` |
+| `0x1004BC` | `MvdSdkCacheMainThreadTls` | `void MvdSdkCacheMainThreadTls(void)` |
+| `0x1004CC` | `MvdSdkInitializeHeapObject` | `void MvdSdkInitializeHeapObject(MvdSdkHeapObject *heap, void *region, u32 size, u16 options)` |
+| `0x1004E8` | `MvdSdkInitializeSrvStateOnce` | `void MvdSdkInitializeSrvStateOnce(void)` |
+| `0x10053C` | `MvdSdkHandleNotifications` | `Result MvdSdkHandleNotifications(void)` |
+| `0x100578` | `MvdSdkRegisterNotificationHandler` | `Result MvdSdkRegisterNotificationHandler(NotificationEntry *entry,u32 notificationId)` |
+| `0x1005D4` | `MvdSdkConnectSrvAndRegisterClient` | `Result MvdSdkConnectSrvAndRegisterClient(const char *portName)` |
+| `0x100630` | `srvRegisterService` | `Result srvRegisterService(Handle *out,const char *name,u32 nameLength,u32 maxSessions)` |
+| `0x100684` | `srvUnregisterService` | `Result srvUnregisterService(const char *name,u32 nameLength)` |
+| `0x1006C8` | `MvdSdkReleaseSrvReference` | `Result MvdSdkReleaseSrvReference(void)` |
 | `0x100724` | `MvdY2rInitializeInterrupt` | `Result MvdY2rInitializeInterrupt(void)` |
 | `0x100790` | `MvdY2rFinalizeInterrupt` | `Result MvdY2rFinalizeInterrupt(void)` |
+| `0x100808` | `MvdCloseClientSession` | `void __usercall MvdCloseClientSession(s32 index@<R1>,Handle previousReply@<R2>)` |
+| `0x1008BC` | `MvdRuntimeClearTlsPrefix` | `void MvdRuntimeClearTlsPrefix(void)` |
+| `0x1008D4` | `MvdRuntimeInstallInitialThreadState` | `void MvdRuntimeInstallInitialThreadState(void)` |
+| `0x100914` | `MvdSdkCacheProcessInfo20` | `void MvdSdkCacheProcessInfo20(void)` |
+| `0x10093C` | `MvdExpandedHeapInitialize` | `MvdExpandedHeap *MvdExpandedHeapInitialize(MvdExpandedHeap *heap, void *region, u32 size, u16 options)` |
+| `0x100994` | `MvdSdkCloseSrvHandle` | `Result MvdSdkCloseSrvHandle(void)` |
+| `0x1009B8` | `MvdSdkFindNotificationHandler` | `NotificationEntry *MvdSdkFindNotificationHandler(NotificationEntryListNode **list,u32 notificationId)` |
+| `0x1009FC` | `MvdSdkSrvRegisterClient` | `Result MvdSdkSrvRegisterClient(void)` |
+| `0x100A34` | `srvEnableNotification` | `Result srvEnableNotification(Handle *out)` |
+| `0x100A70` | `MvdSdkSrvReceiveNotification` | `Result MvdSdkSrvReceiveNotification(u32 *notificationId)` |
+| `0x100AA8` | `MvdSdkPackResult` | `Result *MvdSdkPackResult(Result *out, s32 level, u32 summary, u32 module, u32 description)` |
+| `0x100AC2` | `MvdSdkConstructAddressArena` | `void MvdSdkConstructAddressArena(MvdSdkAddressArena *arena, u32 base, u32 size)` |
+| `0x100ADE` | `MvdSdkInitializeAddressArena` | `void MvdSdkInitializeAddressArena(MvdSdkAddressArena *arena, u32 base, u32 size)` |
+| `0x100B02` | `MvdRuntimeDefaultTerminate` | `void __noreturn MvdRuntimeDefaultTerminate(void)` |
+| `0x100B06` | `MvdRuntimeTerminate` | `void __noreturn MvdRuntimeTerminate(void)` |
+| `0x100B10` | `MvdSdkRegisterHeapHeader` | `void MvdSdkRegisterHeapHeader(MvdSdkHeapHeader *heap, u32 signature, u8 *begin, u8 *end, u8 options)` |
 | `0x100B54` | `MvdL2bSetControlBit29` | `Result MvdL2bSetControlBit29(MvdL2bRegisterContext *registers, s32 enable)` |
 | `0x100B74` | `MvdY2rSetControlBit29` | `Result MvdY2rSetControlBit29(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x100B94` | `MvdRuntimeInvokeTerminateHandler` | `void __noreturn MvdRuntimeInvokeTerminateHandler(void)` |
+| `0x100BB0` | `MvdSdkSleepNanoseconds` | `void MvdSdkSleepNanoseconds(s64 timeoutNs)` |
+| `0x100BB8` | `MvdSdkListAppend` | `MvdSdkIntrusiveList *MvdSdkListAppend(MvdSdkIntrusiveList *list, void *object)` |
+| `0x100BE4` | `MvdSdkFindHeapRegistrationList` | `MvdSdkIntrusiveList *MvdSdkFindHeapRegistrationList(const void *address)` |
+| `0x100C00` | `MvdSdkInitializeIntrusiveList` | `MvdSdkIntrusiveList *MvdSdkInitializeIntrusiveList(MvdSdkIntrusiveList *list, u16 linkOffset)` |
+| `0x100C0C` | `MvdSdkGetResultLevel` | `s32 MvdSdkGetResultLevel(const Result *result)` |
+| `0x100C18` | `MvdRuntimeAllocateEmergencyBuffer` | `MvdRuntimeEmergencyBuffer *MvdRuntimeAllocateEmergencyBuffer(void)` |
+| `0x100C2A` | `MvdRuntimeTryAcquireEmergencyBuffer` | `void *MvdRuntimeTryAcquireEmergencyBuffer(MvdRuntimeEmergencyBuffer *buffer, u32 size)` |
+| `0x100C44` | `MvdRuntimeReleaseEmergencyBuffer` | `MvdRuntimeEmergencyBuffer *MvdRuntimeReleaseEmergencyBuffer(MvdRuntimeEmergencyBuffer *buffer, void *allocation)` |
+| `0x100C5C` | `MvdRuntimeDefaultTerminateAlternate` | `void __noreturn MvdRuntimeDefaultTerminateAlternate(void)` |
+| `0x100C60` | `MvdRuntimeGetThreadState` | `MvdRuntimeThreadState *MvdRuntimeGetThreadState(void)` |
+| `0x100CB0` | `MvdSdkInitializeLockWord` | `void MvdSdkInitializeLockWord(s32 *counter)` |
+| `0x100CC0` | `MvdSdkUnlockRecursiveLock` | `void MvdSdkUnlockRecursiveLock(MvdSdkRecursiveLock *lock)` |
+| `0x100CD4` | `MvdSdkReportFatalError` | `void MvdSdkReportFatalError(MvdSdkFatalErrorInfo *error)` |
+| `0x100D60` | `MvdSdkListSetFirst` | `MvdSdkIntrusiveList *MvdSdkListSetFirst(MvdSdkIntrusiveList *list, void *object)` |
+| `0x100D76` | `MvdSdkFindContainingHeap` | `MvdSdkHeapHeader *MvdSdkFindContainingHeap(MvdSdkIntrusiveList *list, const void *address)` |
+| `0x100DAC` | `MvdSdkHeapAllocateLocked` | `void *MvdSdkHeapAllocateLocked(MvdSdkHeapObject *heap, u32 size, s32 alignment, u16 groupId, u8 bestFit, u8 reuseAlignmentPadding)` |
+| `0x100DE2` | `MvdSdkAtomicStoreCallback` | `u32 MvdSdkAtomicStoreCallback(const s32 *desired, s32 *observed)` |
+| `0x100DEA` | `MvdSdkInitializeAddressWaitState` | `void MvdSdkInitializeAddressWaitState(MvdSdkAddressWaitState *state, u32 mode)` |
+| `0x100E0C` | `MvdSdkWaitAddressState` | `void MvdSdkWaitAddressState(MvdSdkAddressWaitState *state)` |
+| `0x100E4A` | `MvdSdkAcquireLockWord` | `void MvdSdkAcquireLockWord(s32 *counter)` |
+| `0x100E5E` | `MvdSdkReleaseLockWord` | `void MvdSdkReleaseLockWord(s32 *counter)` |
+| `0x100E7C` | `MvdSdkNotifyAbort` | `void MvdSdkNotifyAbort(u32 reason,u32 auxiliaryWord)` |
+| `0x100E90` | `MvdSdkCloseFatalErrorPort` | `void MvdSdkCloseFatalErrorPort(void)` |
+| `0x100EB0` | `MvdSdkConnectFatalErrorPort` | `Result MvdSdkConnectFatalErrorPort(void)` |
+| `0x100ED8` | `MvdSdkSendFatalError` | `Result MvdSdkSendFatalError(const Handle *port, const MvdSdkFatalErrorInfo *error)` |
+| `0x100F12` | `MvdSdkHeapAllocateUnlocked` | `void *MvdSdkHeapAllocateUnlocked(MvdSdkHeapObject *heap, u32 size, s32 alignment, u16 groupId, u8 bestFit, u8 reuseAlignmentPadding)` |
+| `0x100F4C` | `MvdExpandedHeapSetBestFitBit` | `void MvdExpandedHeapSetBestFitBit(MvdExpandedHeapState *state, u8 bestFit)` |
+| `0x100F5C` | `MvdSdkListNext` | `void *MvdSdkListNext(const MvdSdkIntrusiveList *list, const void *object)` |
+| `0x100F6C` | `MvdSdkIsRecursiveLockOwner` | `u32 MvdSdkIsRecursiveLockOwner(const MvdSdkRecursiveLock *lock)` |
+| `0x100F82` | `MvdRuntimeGetThreadStateSlot` | `MvdRuntimeThreadState **MvdRuntimeGetThreadStateSlot(void)` |
+| `0x100F8C` | `MvdSdkAcquireContendedLockWord` | `void MvdSdkAcquireContendedLockWord(s32 *counter)` |
+| `0x100FC4` | `MvdSdkWaitAddressBelow` | `void MvdSdkWaitAddressBelow(s32 *address, s32 threshold)` |
+| `0x100FD0` | `MvdSdkInvokeAbortCallback` | `void MvdSdkInvokeAbortCallback(u32 reason,u32 arg1,u32 arg2,u32 arg3,u32 arg4,u32 arg5)` |
+| `0x100FF4` | `MvdExpandedHeapAllocate` | `void *MvdExpandedHeapAllocate(MvdExpandedHeap *heap, u32 size, s32 alignment)` |
+| `0x1010B6` | `MvdExpandedHeapSetGroupId` | `u16 MvdExpandedHeapSetGroupId(MvdExpandedHeap *heap, u16 groupId)` |
+| `0x1010C0` | `MvdExpandedHeapSetBestFit` | `u32 MvdExpandedHeapSetBestFit(MvdExpandedHeap *heap, u8 bestFit)` |
+| `0x1010D2` | `MvdExpandedHeapSetReuseAlignmentPadding` | `s8 MvdExpandedHeapSetReuseAlignmentPadding(MvdExpandedHeap *heap, u8 enabled)` |
+| `0x1010DE` | `MvdSdkAtomicCompareExchange` | `s32 MvdSdkAtomicCompareExchange(s32 *address, s32 expected, s32 desired)` |
+| `0x1010F0` | `MvdSdkAtomicStore` | `void MvdSdkAtomicStore(s32 *address, s32 desired)` |
+| `0x1010FE` | `MvdSdkAtomicNegateCallback` | `u32 MvdSdkAtomicNegateCallback(s32 *newValue, s32 *observed)` |
+| `0x10110A` | `MvdHeapInitializeBlock` | `MvdHeapBlock *MvdHeapInitializeBlock(const MvdHeapRange *range, u16 signature)` |
+| `0x101124` | `MvdExpandedHeapCarveBlock` | `void *MvdExpandedHeapCarveBlock(MvdExpandedHeapState *state, MvdHeapBlock *freeBlock, u8 *allocation, u32 roundedSize, u32 fromBack)` |
+| `0x101208` | `MvdSdkAtomicAcquireCallback` | `u32 MvdSdkAtomicAcquireCallback(void *unused, s32 *observed)` |
+| `0x10121A` | `MvdSdkAtomicEnqueueCallback` | `u32 MvdSdkAtomicEnqueueCallback(void *unused, s32 *observed)` |
+| `0x10122C` | `MvdSdkAtomicHandoffCallback` | `u32 MvdSdkAtomicHandoffCallback(void *unused, s32 *observed)` |
+| `0x101240` | `MvdExpandedHeapClearAllocation` | `void MvdExpandedHeapClearAllocation(const MvdExpandedHeap *heap, void *begin, u32 size)` |
+| `0x10125C` | `MvdHeapGetBlockRange` | `void MvdHeapGetBlockRange(MvdHeapRange *range, const MvdHeapBlock *block)` |
+| `0x101274` | `MvdSdkAtomicCompareExchangeCallback` | `u32 MvdSdkAtomicCompareExchangeCallback(MvdSdkCompareExchangeContext *context, s32 *observed)` |
+| `0x10128C` | `MvdRuntimeRunRelativeInitializers` | `void MvdRuntimeRunRelativeInitializers(void)` |
 | `0x1012B0` | `AllocateAsicBuffers` | `u32 AllocateAsicBuffers(MvdH264Container *decoder,MvdH264AsicBuffers *buffers,u32 picSizeInMbs)` |
 | `0x101374` | `MvdFlushPpOutputBeforeStart` | `void MvdFlushPpOutputBeforeStart(const MvdDwlInstance *dwl)` |
 | `0x1013E4` | `CheckIntraChromaPrediction` | `u32 CheckIntraChromaPrediction(u32 predictionMode,u32 availableA,u32 availableB,u32 availableD)` |
@@ -24,6 +117,7 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x101678` | `ComparePicturesB` | `s32 ComparePicturesB(const MvdH264DpbPicture *first,const MvdH264DpbPicture *second,s32 currentPoc)` |
 | `0x101768` | `MvdBusToClientVirtualForCache` | `u32 __spoils<r0,r1,r2> MvdBusToClientVirtualForCache(u32 address,u32 size)` |
 | `0x101788` | `DWLReadAsicFuseStatus` | `void DWLReadAsicFuseStatus(MvdDwlFuseStatus *fuses)` |
+| `0x10189C` | `MvdRuntimeCallocVeneer` | `void *MvdRuntimeCallocVeneer(u32 count, u32 elementSize)` |
 | `0x1018A4` | `DecRefPicMarking` | `u32 DecRefPicMarking(strmData_t *stream,MvdH264RefMarking *marking,u32 isIdr,u32 refFrameCount)` |
 | `0x101A10` | `DecideParityMode` | `u32 DecideParityMode(MvdRefBuffer *refBuffer,u32 isBframe)` |
 | `0x101A3C` | `DecodeBoxOutMap` | `void DecodeBoxOutMap(u32 *map,u32 sliceGroupChangeDirectionFlag,u32 unitsInSliceGroup0,u32 picWidth,u32 picHeight)` |
@@ -136,6 +230,7 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10A788` | `VP6HwdAsicInit` | `void VP6HwdAsicInit(MvdVp6Container *decoder)` |
 | `0x10A7A8` | `VP6HwdAsicInitPicture` | `void VP6HwdAsicInitPicture(MvdVp6Container *decoder)` |
 | `0x10A9C8` | `VP6HwdAsicProbUpdate` | `void VP6HwdAsicProbUpdate(MvdVp6Container *decoder)` |
+| `0x10ADD4` | `MvdRuntimeClearBytes` | `void MvdRuntimeClearBytes(void *destination, u32 size)` |
 | `0x10AE14` | `MvdVp8AccumulateConcealmentVector` | `void MvdVp8AccumulateConcealmentVector(MvdVp8EcState *state,s32 blockX,s32 blockY,s32 mvX,s32 mvY,u32 referenceIndex,u32 weight)` |
 | `0x10AE80` | `Mmcop5` | `u32 Mmcop5(MvdH264Dpb *dpb)` |
 | `0x10AED0` | `OutBufFree` | `void OutBufFree(MvdH264Dpb *dpb,u32 outputIndex)` |
@@ -149,6 +244,8 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10B0A0` | `h264bsdAllocateDpbImage` | `MvdLinearMem *h264bsdAllocateDpbImage(MvdH264Dpb *dpb)` |
 | `0x10B17C` | `CheckPps` | `u32 CheckPps(MvdH264Pps *pps,MvdH264Sps *sps)` |
 | `0x10B20A` | `h264DpbUpdateOutputList` | `void h264DpbUpdateOutputList(MvdH264Dpb *dpb)` |
+| `0x10B348` | `MvdSdkInitializeMemberCallback` | `MvdSdkMemberCallback *MvdSdkInitializeMemberCallback(MvdSdkMemberCallback *callback)` |
+| `0x10B36C` | `MvdRuntimeTryInitializeStaticGuard` | `u32 MvdRuntimeTryInitializeStaticGuard(u32 *guard)` |
 | `0x10B37E` | `MvdL2bConstructContext` | `MvdL2bContext * MvdL2bConstructContext(MvdL2bContext *context)` |
 | `0x10B3C0` | `MvdY2rInvalidCoefficientResult` | `Result MvdY2rInvalidCoefficientResult(void)` |
 | `0x10B3C8` | `MvdIsClientLinearRange` | `u32 MvdIsClientLinearRange(u32 address,u32 size)` |
@@ -166,6 +263,8 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10B5C0` | `MvdY2rReadRotationBits` | `Result MvdY2rReadRotationBits(MvdY2rRegisterContext *registers, u16 *bits)` |
 | `0x10B5D8` | `MvdClientVirtualToBus` | `u32 MvdClientVirtualToBus(u32 address, u32 size)` |
 | `0x10B608` | `MvdConvertLibraryResult` | `Result MvdConvertLibraryResult(s32 status, u32 codecClass, u32 postprocessor)` |
+| `0x10B80C` | `SetCurrentProcessHandle` | `void SetCurrentProcessHandle(Handle process)` |
+| `0x10B838` | `MvdExtractBitField` | `u32 MvdExtractBitField(u32 word, u8 leastSignificantBit, u8 width)` |
 | `0x10B84E` | `MvdDmaDestroyHandle` | `Handle * MvdDmaDestroyHandle(Handle *dma)` |
 | `0x10B860` | `MvdL2bReadAlpha` | `Result MvdL2bReadAlpha(MvdL2bRegisterContext *registers, u16 *alpha)` |
 | `0x10B874` | `MvdDmaIsDone` | `u32 MvdDmaIsDone(const Handle *dma)` |
@@ -297,21 +396,34 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10F448` | `h264bsdGetBits` | `u32 h264bsdGetBits(strmData_t *stream, u32 numBits)` |
 | `0x10F474` | `MvdCopyMemory` | `void *MvdCopyMemory(void *dest, const void *source, u32 size)` |
 | `0x10F500` | `MvdHeapFree` | `void MvdHeapFree(void *ptr)` |
+| `0x10F518` | `MvdRuntimeClearAlignedBytes` | `void MvdRuntimeClearAlignedBytes(void *destination, u32 size)` |
 | `0x10F56C` | `MvdDwlAllocateLinear` | `i32 MvdDwlAllocateLinear(MvdDwlInstance *dwl,u32 size,MvdLinearMem *buffer)` |
 | `0x10F5D0` | `IsReference` | `u32 IsReference(MvdH264DpbPicture picture,u32 field)` |
 | `0x10F608` | `IsShortTerm` | `u32 IsShortTerm(const MvdH264DpbPicture *picture,u32 field)` |
 | `0x10F630` | `IsShortTermField` | `u32 IsShortTermField(const MvdH264DpbPicture *picture)` |
 | `0x10F64C` | `IsReferenceField` | `u32 IsReferenceField(const MvdH264DpbPicture *picture)` |
+| `0x10F668` | `MvdUnsignedDivideWithRemainder` | `MvdUnsignedDivModResult __usercall MvdUnsignedDivideWithRemainder@<R1:R0>(u32 dividend@<R0>, u32 divisor@<R1>)` |
 | `0x10F68C` | `svcFlushProcessDataCache` | `Result svcFlushProcessDataCache(Handle process,u32 address,u32 size)` |
 | `0x10F694` | `DWLfree` | `void DWLfree(void *ptr)` |
 | `0x10F6A0` | `DWLmalloc` | `void *DWLmalloc(u32 size)` |
 | `0x10F6A8` | `RefbuInit` | `void RefbuInit(MvdRefBuffer *refbu,u32 decMode,u32 widthInMbs,u32 heightInMbs,u32 supportFlags)` |
 | `0x10F780` | `DWLmemcpy` | `void *DWLmemcpy(void *dest, const void *source, u32 size)` |
 | `0x10F788` | `DWLMallocLinear` | `i32 DWLMallocLinear(MvdDwlInstance *dwl,u32 size,MvdLinearMem *buffer)` |
+| `0x10F790` | `MvdHeapGetBlockEnd` | `u8 *MvdHeapGetBlockEnd(const MvdHeapBlock *block)` |
+| `0x10F79A` | `MvdHeapBlockListInsertAfter` | `MvdHeapBlock *MvdHeapBlockListInsertAfter(MvdHeapBlockList *list, MvdHeapBlock *block, MvdHeapBlock *previous)` |
+| `0x10F7BC` | `MvdHeapBlockListRemove` | `MvdHeapBlock *MvdHeapBlockListRemove(MvdHeapBlockList *list, MvdHeapBlock *block)` |
+| `0x10F7D8` | `MvdSdkArbitrateAddress` | `Result MvdSdkArbitrateAddress(s32 *address, u32 action, s32 value)` |
+| `0x10F7F8` | `MvdSdkTryAcquireLockWord` | `u32 MvdSdkTryAcquireLockWord(s32 *counter)` |
+| `0x10F804` | `MvdSdkDestroyScopedRecursiveLock` | `MvdSdkScopedRecursiveLock *MvdSdkDestroyScopedRecursiveLock(MvdSdkScopedRecursiveLock *guard)` |
+| `0x10F812` | `MvdSdkConstructScopedRecursiveLock` | `MvdSdkScopedRecursiveLock *MvdSdkConstructScopedRecursiveLock(MvdSdkScopedRecursiveLock *guard, MvdSdkRecursiveLock *lock)` |
+| `0x10F824` | `MvdSdkGetThreadIdentity` | `u8 *MvdSdkGetThreadIdentity(void)` |
 | `0x10F82C` | `MvdHeapAlloc` | `void *MvdHeapAlloc(u32 size)` |
+| `0x10F848` | `MvdSdkBreakWithReason` | `void __noreturn MvdSdkBreakWithReason(u32 reason)` |
 | `0x10F85C` | `MvdIpcBuildHeader` | `u32 MvdIpcBuildHeader(u32 commandId, u32 normalWords, u32 translatedWords, u32 extra)` |
 | `0x10F874` | `MvdY2rInvalidDimensionsResult` | `Result MvdY2rInvalidDimensionsResult(void)` |
 | `0x10F87C` | `MvdL2bInvalidDimensionsResult` | `Result MvdL2bInvalidDimensionsResult(void)` |
+| `0x10F884` | `MvdSdkPanic` | `void __noreturn MvdSdkPanic(void)` |
+| `0x10F88C` | `MvdSdkReportFailureAt` | `void MvdSdkReportFailureAt(Result result, u32 callerPc)` |
 | `0x10F898` | `MvdY2rSetOutputDmaEnable` | `Result MvdY2rSetOutputDmaEnable(MvdY2rRegisterContext *registers, s32 enable)` |
 | `0x10F8B8` | `MvdY2rSetInputDmaEnable` | `Result MvdY2rSetInputDmaEnable(MvdY2rRegisterContext *registers, s32 enable)` |
 | `0x10F8D8` | `MvdY2rSetTransferEndInterrupt` | `Result MvdY2rSetTransferEndInterrupt(MvdY2rRegisterContext *registers, s32 enable)` |
@@ -324,6 +436,7 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10F998` | `MvdY2rWriteLines` | `Result MvdY2rWriteLines(MvdY2rRegisterContext *registers, s32 lines)` |
 | `0x10F9C4` | `MvdY2rWriteLineWidth` | `Result MvdY2rWriteLineWidth(MvdY2rRegisterContext *registers, s32 width)` |
 | `0x10F9FC` | `MvdY2rWriteDitherWeights` | `Result MvdY2rWriteDitherWeights(MvdY2rRegisterContext *registers, MvdY2rDitherWeights weights)` |
+| `0x10FABC` | `MvdRuntimeCopyAlignedBytesAdvance` | `void *MvdRuntimeCopyAlignedBytesAdvance(void *destination,const void *source,u32 size)` |
 | `0x10FB30` | `MvdY2rSetTemporalDithering` | `Result MvdY2rSetTemporalDithering(MvdY2rRegisterContext *registers, s32 enable)` |
 | `0x10FB50` | `MvdY2rSetSpatialDithering` | `Result MvdY2rSetSpatialDithering(MvdY2rRegisterContext *registers, s32 enable)` |
 | `0x10FB70` | `MvdY2rWriteCoefficients` | `Result MvdY2rWriteCoefficients(MvdY2rRegisterContext *registers, MvdY2rCoefficients coefficients)` |
@@ -345,23 +458,39 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x10FDD0` | `MvdL2bWriteInputFormat` | `Result MvdL2bWriteInputFormat(MvdL2bRegisterContext *registers, u32 format)` |
 | `0x10FDE8` | `MvdL2bWriteReset` | `Result MvdL2bWriteReset(MvdL2bRegisterContext *registers)` |
 | `0x10FDFC` | `MvdL2bStop` | `Result MvdL2bStop(MvdL2bRegisterContext *registers)` |
+| `0x10FE14` | `MvdHeapInitializeFreeBlock` | `MvdHeapBlock *MvdHeapInitializeFreeBlock(const MvdHeapRange *range)` |
+| `0x10FE24` | `MvdRuntimeCopyBytesAdvance` | `void *MvdRuntimeCopyBytesAdvance(void *destination,const void *source,u32 size)` |
+| `0x10FEAC` | `MvdSdkBuildAndReportFatalError` | `void MvdSdkBuildAndReportFatalError(Result result, u8 type, u32 callerPc)` |
+| `0x10FED0` | `MvdSdkLockRecursiveLock` | `void MvdSdkLockRecursiveLock(MvdSdkRecursiveLock *lock)` |
 | `0x10FEF0` | `MVDY2R_DriverFinalize` | `Result MVDY2R_DriverFinalize(void)` |
 | `0x10FF54` | `MvdL2bCloseSession` | `Result MvdL2bCloseSession(MvdL2bContext *context)` |
 | `0x10FF98` | `MvdY2rRegistersFinalize` | `Result MvdY2rRegistersFinalize(MvdY2rRegisterContext *registers)` |
 | `0x10FFF4` | `MvdY2rRegistersInitialize` | `Result MvdY2rRegistersInitialize(MvdY2rRegisterContext *registers, u32 engine)` |
 | `0x110114` | `MvdIpcReadWord` | `u32 MvdIpcReadWord(u32 **buffer, u32 wordIndex)` |
+| `0x110124` | `MvdIpcCopyBytes` | `void *MvdIpcCopyBytes(u32 **commandBuffer, u32 wordOffset, const void *source, u32 size)` |
 | `0x110138` | `MvdIpcWriteResponseHeader` | `u32 MvdIpcWriteResponseHeader(u32 **buffer, u32 command, u32 normalWords, u32 translatedWords, u32 extra)` |
+| `0x110150` | `svcConnectToPort` | `Result svcConnectToPort(Handle *out, const char *name)` |
+| `0x110168` | `MvdSdkDestroyScopedRecursiveLockAlternate` | `MvdSdkScopedRecursiveLock *MvdSdkDestroyScopedRecursiveLockAlternate(MvdSdkScopedRecursiveLock *guard)` |
+| `0x110176` | `MvdSdkMakeStatusResult` | `Result MvdSdkMakeStatusResult(u32 summary, u32 module, u32 description)` |
+| `0x11018A` | `MvdSdkConstructScopedRecursiveLockAlternate` | `MvdSdkScopedRecursiveLock *MvdSdkConstructScopedRecursiveLockAlternate(MvdSdkScopedRecursiveLock *guard, MvdSdkRecursiveLock *lock)` |
 | `0x11019C` | `svcUnbindInterrupt` | `Result svcUnbindInterrupt(u32 interruptId, Handle event)` |
 | `0x1101A4` | `MvdDmaStopAndClose` | `Result MvdDmaStopAndClose(Handle *dma)` |
 | `0x1101B4` | `MvdDmaStop` | `Result MvdDmaStop(const Handle *dma)` |
 | `0x1101CC` | `MvdL2bRegistersFinalize` | `Result MvdL2bRegistersFinalize(MvdL2bRegisterContext *registers)` |
 | `0x110218` | `svcBindInterrupt` | `Result svcBindInterrupt(u32 interruptId, Handle event, s32 priority, u8 manualClear)` |
+| `0x110220` | `MvdSdkHandleUnexpectedResult` | `void MvdSdkHandleUnexpectedResult(Result result)` |
 | `0x11026C` | `svcCreateEvent` | `Result svcCreateEvent(Handle *event, u32 resetType)` |
 | `0x110284` | `MvdL2bRegistersInitialize` | `Result MvdL2bRegistersInitialize(MvdL2bRegisterContext *registers, u32 engine)` |
 | `0x110314` | `MvdCloseOwnedHandle` | `Result MvdCloseOwnedHandle(Handle *handle)` |
 | `0x110328` | `MvdL2bFinalizeInterrupt` | `Result MvdL2bFinalizeInterrupt(MvdL2bContext *context)` |
 | `0x110398` | `MvdL2bOpenSession` | `Result MvdL2bOpenSession(MvdL2bContext *context)` |
+| `0x1103C8` | `MvdSdkServiceNotInitialized` | `Result MvdSdkServiceNotInitialized(void)` |
+| `0x1103D0` | `MvdSdkGetTlsBase` | `u8 *MvdSdkGetTlsBase(void)` |
 | `0x1103D8` | `MvdL2bInitializeInterrupt` | `Result MvdL2bInitializeInterrupt(MvdL2bContext *context, u32 engine)` |
+| `0x110468` | `panicIfFailed` | `void panicIfFailed(Result result)` |
+| `0x110474` | `MvdSdkInitializeRecursiveLock` | `void MvdSdkInitializeRecursiveLock(MvdSdkRecursiveLock *lock)` |
+| `0x110484` | `MvdSdkAcquireSrvReference` | `Result MvdSdkAcquireSrvReference(void)` |
+| `0x1104CC` | `MvdSdkPanicWithDefaultReason` | `void __noreturn MvdSdkPanicWithDefaultReason(void)` |
 | `0x1104D8` | `VP6HwdAsicRun` | `u32 VP6HwdAsicRun(MvdVp6Container *decoder)` |
 | `0x1106D4` | `VP6HwdAsicStrmPosUpdate` | `void VP6HwdAsicStrmPosUpdate(MvdVp6Container *decoder)` |
 | `0x1107CC` | `VP8DecDecode` | `VP8DecRet VP8DecDecode(VP8DecInst instance, const VP8DecInput *input, VP8DecOutput *output)` |
@@ -379,6 +508,23 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x111A4C` | `MvdWaitDecoderStatus` | `i32 MvdWaitDecoderStatus(void)` |
 | `0x111A9C` | `MvdWaitPostprocessorStatus` | `i32 MvdWaitPostprocessorStatus(void)` |
 | `0x111AF8` | `WriteRlcToAsic` | `void WriteRlcToAsic(u8 mbType,u32 codedBlockPattern,MvdH264Residual *residual,MvdH264AsicBuffers *asic)` |
+| `0x111C58` | `MvdSdkBindInterrupt` | `Result MvdSdkBindInterrupt(u32 interruptId, const Handle *event, s32 priority, u8 manualClear)` |
+| `0x111C62` | `MvdSdkUnbindInterrupt` | `Result MvdSdkUnbindInterrupt(u32 interruptId, const Handle *event)` |
+| `0x111C6C` | `MvdSdkWaitOptionalHandle` | `void MvdSdkWaitOptionalHandle(const Handle *handle)` |
+| `0x111C88` | `MvdSdkWaitHandle` | `void MvdSdkWaitHandle(const Handle *handle)` |
+| `0x111C9E` | `MvdSdkTryLockRecursiveLock` | `u32 MvdSdkTryLockRecursiveLock(MvdSdkRecursiveLock *lock)` |
+| `0x111CC8` | `MvdSdkReleaseResourceSlot` | `void MvdSdkReleaseResourceSlot(const u32 *slot)` |
+| `0x111CE8` | `MvdSdkDestroyResourceSlot` | `u32 *MvdSdkDestroyResourceSlot(u32 *slot)` |
+| `0x111D00` | `MvdSdkDestroyEventObject` | `MvdSdkEventObject *MvdSdkDestroyEventObject(MvdSdkEventObject *event)` |
+| `0x111D28` | `MvdSdkIsResourceSlotAllocated` | `u32 MvdSdkIsResourceSlotAllocated(const u32 *slot)` |
+| `0x111D40` | `MvdSdkDestroyOwnedHandle` | `Handle *MvdSdkDestroyOwnedHandle(Handle *handle)` |
+| `0x111D4C` | `MvdSdkJoinThreadOnce` | `void MvdSdkJoinThreadOnce(MvdSdkThreadHandle *thread)` |
+| `0x111D64` | `MvdSdkInitializeCurrentThreadHandle` | `MvdSdkThreadHandle *MvdSdkInitializeCurrentThreadHandle(MvdSdkThreadHandle *thread)` |
+| `0x111D90` | `MvdSdkDestroyThreadHandle` | `MvdSdkThreadHandle *MvdSdkDestroyThreadHandle(MvdSdkThreadHandle *thread)` |
+| `0x111DAA` | `MvdSdkDestroyOwnedHandleAlternate` | `Handle *MvdSdkDestroyOwnedHandleAlternate(Handle *handle)` |
+| `0x111DB6` | `MvdSdkHeapFreeUnlocked` | `void MvdSdkHeapFreeUnlocked(MvdSdkHeapObject *heap, void *allocation)` |
+| `0x111DC8` | `MvdExpandedHeapFree` | `void MvdExpandedHeapFree(MvdExpandedHeap *heap, void *allocation)` |
+| `0x111DEC` | `MvdExpandedHeapCoalesceFreeRange` | `u32 MvdExpandedHeapCoalesceFreeRange(MvdExpandedHeapState *state, const MvdHeapRange *range)` |
 | `0x111E64` | `L2BU_HandleCommands` | `void L2BU_HandleCommands(MvdL2bContext *context)` |
 | `0x11216C` | `MVDL2B_SetSending` | `Result MVDL2B_SetSending(MvdL2bContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
 | `0x112238` | `MVDL2B_PingProcess` | `Result MVDL2B_PingProcess(MvdL2bContext *context, u8 *sessions)` |
@@ -486,7 +632,10 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x11422C` | `MVDY2R_GetStandardCoefficient` | `Result MVDY2R_GetStandardCoefficient(MvdY2rContext *context, MvdY2rCoefficients *coefficients, u8 index)` |
 | `0x11423C` | `MVDY2R_GetAlpha` | `Result MVDY2R_GetAlpha(MvdY2rContext *context, u16 *alpha)` |
 | `0x11424C` | `MVDY2R_SetAlpha` | `Result MVDY2R_SetAlpha(MvdY2rContext *context, u16 alpha)` |
+| `0x11425C` | `MvdSdkInitializeHandle` | `Handle *MvdSdkInitializeHandle(Handle *handle)` |
 | `0x114264` | `MvdBindDecoderInterrupt` | `int MvdBindDecoderInterrupt(void)` |
+| `0x1142BC` | `MvdReleaseDecoderInterrupt` | `void MvdReleaseDecoderInterrupt(void)` |
+| `0x1142E4` | `MvdClearShutdownFlag` | `void MvdClearShutdownFlag(void)` |
 | `0x1142F8` | `MvdCalculateLevelWorkBufferSize` | `u32 MvdCalculateLevelWorkBufferSize(const MvdWorkSizeParams *params)` |
 | `0x114350` | `MvdAttachClientWorkBuffer` | `int MvdAttachClientWorkBuffer(u32 address, u32 size)` |
 | `0x114378` | `MvdL2bStart` | `Result MvdL2bStart(MvdL2bRegisterContext *registers)` |
@@ -496,7 +645,23 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x1143D8` | `MvdY2rReadTemporalDithering` | `Result MvdY2rReadTemporalDithering(MvdY2rRegisterContext *registers, u8 *enabled)` |
 | `0x1143F0` | `MvdY2rReadTransferEndInterrupt` | `Result MvdY2rReadTransferEndInterrupt(MvdY2rRegisterContext *registers, u8 *enabled)` |
 | `0x114408` | `MvdY2rReadDitherWeights` | `Result MvdY2rReadDitherWeights(MvdY2rRegisterContext *registers, MvdY2rDitherWeights *weights)` |
+| `0x11448C` | `MvdRuntimeExitProcess` | `void __noreturn MvdRuntimeExitProcess(void)` |
+| `0x114496` | `MvdRuntimeConstructArray` | `void *MvdRuntimeConstructArray(void *base, void (*constructor)(void *), u32 elementSize, u32 count)` |
+| `0x1144B8` | `MvdRuntimeDivisionByZeroDefault` | `u32 MvdRuntimeDivisionByZeroDefault(u32 value)` |
+| `0x1144C8` | `MvdSdkInitializeFatalErrorState` | `void MvdSdkInitializeFatalErrorState(void)` |
+| `0x114500` | `MvdInitializeServiceStaticState` | `void MvdInitializeServiceStaticState(void)` |
+| `0x11473C` | `MvdSdkInitializeMainThreadHandle` | `void MvdSdkInitializeMainThreadHandle(void)` |
 | `0x11475C` | `MvdY2rInitializeStaticState` | `Handle *MvdY2rInitializeStaticState(void)` |
+| `0x1147BC` | `MvdSdkInitializeGlobalEventObject` | `void MvdSdkInitializeGlobalEventObject(void)` |
+| `0x1147E8` | `MvdRuntimeEmptyInitializerA` | `void MvdRuntimeEmptyInitializerA(void)` |
+| `0x1147EA` | `MvdRuntimeEmptyInitializerB` | `void MvdRuntimeEmptyInitializerB(void)` |
+| `0x1147EC` | `MvdSdkInitializeExitObject` | `void MvdSdkInitializeExitObject(void)` |
+| `0x114818` | `MvdInitializeDwlStaticState` | `void MvdInitializeDwlStaticState(void)` |
+| `0x114884` | `MvdRuntimeClearStaticWord1210C4` | `void MvdRuntimeClearStaticWord1210C4(void)` |
+| `0x114890` | `MvdSdkInitializeHeapRegistryLock` | `void MvdSdkInitializeHeapRegistryLock(void)` |
+| `0x1148B8` | `MvdRuntimeResourceSlotFinalizerStub` | `void MvdRuntimeResourceSlotFinalizerStub(void)` |
+| `0x1148E0` | `MvdRuntimeClearStaticWord1210AC` | `void MvdRuntimeClearStaticWord1210AC(void)` |
+| `0x1148EC` | `MvdRuntimeCalloc` | `void *MvdRuntimeCalloc(u32 count, u32 elementSize)` |
 | `0x114904` | `MvdVp8CollectNeighborVectors` | `u32 MvdVp8CollectNeighborVectors(const u32 *currentMb,MvdVp8Mv *vectors,u32 *referenceIds,u32 mbY,u32 mbX,u32 validRows,u32 widthInMbs)` |
 | `0x114B58` | `h264DpbAdjStereoOutput` | `void h264DpbAdjStereoOutput(MvdH264Dpb *dpb,u32 targetCount)` |
 | `0x114B8E` | `h264GetSarInfo` | `void h264GetSarInfo(const MvdH264Storage *storage, u32 *width, u32 *height)` |
@@ -600,11 +765,36 @@ The auxiliary-driver continuation adds 95 names and refines service/driver ABIs;
 | `0x119804` | `MvdIpcWriteVp8Picture` | `void MvdIpcWriteVp8Picture(u32 **commandBuffer, u32 wordIndex, const MvdVp8Picture *picture)` |
 | `0x119818` | `MvdIpcWriteH264Picture` | `void MvdIpcWriteH264Picture(u32 **commandBuffer, u32 wordIndex, const MvdH264Picture *picture)` |
 | `0x11982C` | `MvdIpcWrite16Bytes` | `void * MvdIpcWrite16Bytes(u32 **buffer, u32 wordIndex, const void *source)` |
+| `0x119840` | `MvdSdkHeapFreeLocked` | `void MvdSdkHeapFreeLocked(MvdSdkHeapObject *heap, void *allocation)` |
+| `0x119860` | `MvdSdkInvokeMemberCallback` | `void MvdSdkInvokeMemberCallback(MvdSdkMemberCallback *callback)` |
+| `0x11987C` | `MvdRuntimeGetLocaleState` | `u32 *MvdRuntimeGetLocaleState(void)` |
+| `0x119888` | `MvdRuntimeLookupCtypeLocale` | `const u8 *MvdRuntimeLookupCtypeLocale(u32 unused, const char *name)` |
+| `0x1198D0` | `MvdRuntimeLookupNumericLocale` | `const void *MvdRuntimeLookupNumericLocale(u32 unused, const char *name)` |
+| `0x119930` | `svcControlMemory` | `Result svcControlMemory(u32 *out, u32 address0, u32 address1, u32 size, u32 operation, u32 permission)` |
+| `0x1199CC` | `MvdRuntimeStringCompare` | `s32 MvdRuntimeStringCompare(const char *left, const char *right)` |
+| `0x119A6C` | `svcCreateAddressArbiter` | `Result svcCreateAddressArbiter(Handle *out)` |
+| `0x119A84` | `MvdRuntimeInitializeFpscr` | `void MvdRuntimeInitializeFpscr(void)` |
+| `0x119A90` | `svcGetProcessInfo` | `Result svcGetProcessInfo(s64 *out, Handle process, u32 type)` |
 | `0x119AAC` | `svcStopDma` | `Result svcStopDma(Handle dma)` |
+| `0x119AB4` | `svcSleepThread` | `void svcSleepThread(s64 timeoutNs)` |
+| `0x119ABC` | `svcBreak` | `void __noreturn svcBreak(u32 reason)` |
+| `0x119AC4` | `svcGetProcessId` | `Result svcGetProcessId(u32 *out, Handle process)` |
+| `0x119AE0` | `MvdSdkAtomicUpdateStore` | `u32 MvdSdkAtomicUpdateStore(s32 *address, const s32 *desired)` |
+| `0x119B2C` | `MvdSdkAtomicUpdateNegate` | `u32 MvdSdkAtomicUpdateNegate(s32 *address, s32 *newValue)` |
+| `0x119B78` | `svcArbitrateAddress` | `Result svcArbitrateAddress(Handle arbiter, u32 address, u32 action, s32 value, s64 timeoutNs)` |
+| `0x119B90` | `MvdSdkAtomicUpdateCompareExchange` | `u32 MvdSdkAtomicUpdateCompareExchange(s32 *address, MvdSdkCompareExchangeContext *context)` |
+| `0x119BDC` | `MvdSdkAtomicUpdateAcquire` | `u32 MvdSdkAtomicUpdateAcquire(s32 *address, void *unused)` |
+| `0x119C28` | `MvdSdkAtomicUpdateEnqueue` | `u32 MvdSdkAtomicUpdateEnqueue(s32 *address, void *unused)` |
+| `0x119C74` | `MvdSdkAtomicUpdateHandoff` | `u32 MvdSdkAtomicUpdateHandoff(s32 *address, void *unused)` |
 | `0x119CC0` | `svcClearEvent` | `Result svcClearEvent(Handle event)` |
+| `0x119CC8` | `svcDuplicateHandle` | `Result svcDuplicateHandle(Handle *out, Handle original)` |
 | `0x119CE0` | `svcGetDmaState` | `Result svcGetDmaState(u32 *state, Handle dma)` |
 | `0x119CF8` | `svcStartInterProcessDma` | `Result svcStartInterProcessDma(Handle *dma, Handle dstProcess, u32 dstAddress, Handle srcProcess, u32 srcAddress, u32 size, const MvdDmaConfig *config)` |
 | `0x119D20` | `svcWaitSynchronization` | `Result svcWaitSynchronization(Handle handle,s64 timeoutNs)` |
+| `0x119D28` | `MvdRuntimeMultiply64` | `u64 MvdRuntimeMultiply64(u64 left, u64 right)` |
+| `0x119D40` | `MvdRuntimeCopyBytes` | `void *MvdRuntimeCopyBytes(void *destination, const void *source, u32 size)` |
+| `0x119D4C` | `MvdRuntimeMemset` | `void *MvdRuntimeMemset(void *destination, s32 value, u32 size)` |
+| `0x119D68` | `MvdRuntimeMemsetSizeValue` | `void MvdRuntimeMemsetSizeValue(void *destination, u32 size, s32 value)` |
 | `0x119D78` | `MvdMaxDpbFramesForLevel` | `u32 MvdMaxDpbFramesForLevel(u32 height, u32 width, u32 levelIndex)` |
 | `0x119DDC` | `ceilf` | `float __usercall ceilf@<s0>(float value@<s0>)` |
 | `0x119E6C` | `floorf` | `float __usercall floorf@<s0>(float value@<s0>)` |
