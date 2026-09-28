@@ -1,5 +1,7 @@
 # Auxiliary services
 
+For the subsequent register/context/DMA analysis and instruction corrections, see [auxiliary-drivers.md](auxiliary-drivers.md). The [transport matrix](auxiliary-ipc.md) records all request/reply sizes and validation behavior.
+
 ## Registration and dispatch
 
 The service table at `0x11A02C` registers `mvd:STD`, `l2b:u`, `l2b2:u` and `y2r2:u`, each with a maximum of one session. The main loop has four active-session slots in total. The function/context table at `0x11A04C` selects:
@@ -32,9 +34,9 @@ Each operation has an implicit engine context. A scalar setter consumes one word
 | `0x09` | IsDoneSending | `0x1123DE` | `u8 *done` |
 | `0x0A` | SetReceiving | `0x112242` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
 | `0x0B` | IsDoneReceiving | `0x11244C` | `u8 *done` |
-| `0x0C` | SetInputLineWidth | `0x1123EE` | `u16 width` |
+| `0x0C` | SetInputLineWidth | `0x1123EE` | `s16 width` |
 | `0x0D` | GetInputLineWidth | `0x1123D4` | `u16 *width` |
-| `0x0E` | SetInputLines | `0x112272` | `u16 lines` |
+| `0x0E` | SetInputLines | `0x112272` | `s16 lines` |
 | `0x0F` | GetInputLines | `0x112268` | `u16 *lines` |
 | `0x10` | SetAlpha | `0x1124C2` | `u16 alpha` |
 | `0x11` | GetAlpha | `0x1124B8` | `u16 *alpha` |
@@ -47,7 +49,7 @@ Each operation has an implicit engine context. A scalar setter consumes one word
 
 `07` returns result and a shared event-handle descriptor/address. `08` and `0A` consume address, size, signed 16-bit transfer unit and gap in four separate normal words, followed by the process-handle descriptor. Receive's direct IPC wrapper is `0x112242`; it calls DMA setup at `0x112318` and closes the process handle on success. The sender closes its handle in `0x11216C` on the active setup path.
 
-The DMA configuration uses devices 23/24 for engine zero and 25/26 for engine one. Its burst selection starts at 64 and halves until the transfer unit is divisible by that size. Source cache flush and destination invalidation precede DMA. The receive and send contexts are at offsets 12 and 40. The status commands query their DMA state; `09` is a completion query, not a general blocking wait command.
+The DMA configuration uses devices 23/24 for engine zero and 25/26 for engine one. Its burst selection starts at 64 and halves until the transfer unit is divisible by that size. Source cache **clean** (StoreProcessDataCache, SVC `0x53`) and destination invalidation precede DMA. The earlier flush label was corrected after repairing an ARM/Thumb decoding error. The receive and send contexts are at offsets 12 and 40. The status commands query their DMA state; `09` is a completion query, not a general blocking wait command.
 
 The line-width and line-count setters both require positive multiples of eight, at most 1024. The encoded register value for 1024 is zero. Alpha's low byte is written to a halfword at register offset `0x20`. The format setters clear input bits 0..1 or output bits 8..9 and OR in the supplied value (shifted for output), without a separate range-validation branch. Pixel-layout semantics for these L2B format values have not been independently established by this analysis.
 
@@ -57,8 +59,8 @@ The line-width and line-count setters both require positive multiples of eight, 
 |---|---|
 | 0 | u8 input format |
 | 1 | u8 output format |
-| 2 | u16 line width |
-| 4 | u16 line count |
+| 2 | s16 line width |
+| 4 | s16 line count |
 | 6 | u16 alpha |
 
 The setter applies fields sequentially and returns at the first failing operation, with no rollback. `16` fills this same block. Its reply header advertises **five normal words**, but the dispatcher writes only result plus the two data words. The remaining advertised words are not populated by that path. `17` returns the context's session-count byte, incremented during session acceptance.
@@ -94,9 +96,9 @@ The operation ordering matches libctru's Y2R client API through `2C`, with an ad
 | `0x17` | IsDoneSendingV | `0x113E78` | `u8 *done` |
 | `0x18` | SetReceiving | `0x113B30` | `Handle process, void *address, u32 size, s16 unit, s16 gap` |
 | `0x19` | IsDoneReceiving | `0x113FB8` | `u8 *done` |
-| `0x1A` | SetInputLineWidth | `0x113D88` | `u16 width` |
+| `0x1A` | SetInputLineWidth | `0x113D88` | `s16 width` |
 | `0x1B` | GetInputLineWidth | `0x113D64` | `u16 *width` |
-| `0x1C` | SetInputLines | `0x113B68` | `u16 lines` |
+| `0x1C` | SetInputLines | `0x113B68` | `s16 lines` |
 | `0x1D` | GetInputLines | `0x113B58` | `u16 *lines` |
 | `0x1E` | SetCoefficients | `0x114088` | `MvdY2rCoefficients coefficients` |
 | `0x1F` | GetCoefficients | `0x114054` | `MvdY2rCoefficients *coefficients` |
@@ -122,7 +124,7 @@ Scalar setters/getters and event return use the same transport conventions as L2
 | Byte offset | Field |
 |---|---|
 | 0, 1, 2, 3 | u8 input format, output format, rotation, block alignment |
-| 4, 6 | 16-bit line width, line count |
+| 4, 6 | Signed 16-bit line width, line count |
 | 8 | u8 standard-coefficient index |
 | 9 | Unused byte |
 | 10 | u16 alpha |
@@ -134,3 +136,5 @@ This matches the packed libctru structure; its client nevertheless advertises se
 Y2R's line width requires a positive multiple of eight up to 1024, encoded as zero for 1024. Its line-count setter is different: it rejects zero and values above 1024, leaves the register unchanged for exactly 1024, and otherwise writes the low ten bits. The signed dispatcher load and the setter's absence of a negative check are relevant for malformed values. This is the observed code, not a recommendation to pass such values. Format, rotation and alignment setters clear the corresponding register fields then OR in shifted input, without independently validating every enum value.
 
 These auxiliary interfaces use direct platform results, not the Hantro decoder/PP result converter. Detailed silicon behavior, L2B format ordering and DMA timing remain outside what the static call mapping proves.
+
+The driver continuation recovers module and session lifetimes, IRQ binding, DMA completion/setup distinctions and the differing process-handle close behavior during termination. See [auxiliary-drivers.md](auxiliary-drivers.md). L2B format ordering and unnamed control/status bits remain uncertain.

@@ -1,13 +1,19 @@
 # Applied function names and prototypes
 
-Addresses are IDA virtual addresses. This inventory contains 501 applied functions. `MVDSTD_`, `MVDL2B_`, `MVDY2R_` and `Mvd` names describe recovered service, platform or branch-specific codec behavior. Hantro names identify source counterparts, except the explicitly suffixed `PPChangeOutputBuffer_MVD`. DWL API names identify the abstraction boundary; their implementations use Nintendo memory/interrupt services. SVC names identify verified syscall veneers. `ceilf`/`floorf` are runtime semantic identifications with recovered VFP calling conventions.
+Addresses are IDA virtual addresses. This inventory contains 598 applied functions. `MVDSTD_`, `MVDL2B_`, `MVDY2R_` and `Mvd` names describe recovered service, platform or branch-specific codec behavior. Hantro names identify source counterparts, except the explicitly suffixed `PPChangeOutputBuffer_MVD`. DWL API names identify the abstraction boundary; their implementations use Nintendo memory/interrupt services. SVC names identify verified syscall veneers. `ceilf`/`floorf` are runtime semantic identifications with recovered VFP calling conventions.
 
 The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111E64`) and `Y2RU_HandleCommands` (`0x11328C`) names were preserved, with context prototypes refined. Source-family confidence and ABI differences are documented in [external-code.md](external-code.md).
 
 The database currently contains 796 function entries. `0x115CDE`, formerly `sub_115CDE`, is now an internal epilogue label belonging to `h264bsdDecode`, not an additional function. See [control-flow-corrections.md](control-flow-corrections.md). The correction does not add an inventory row.
 
-| Address | Function | Applied declaration |
+The auxiliary-driver continuation adds 95 names and refines service/driver ABIs; the two previously named auxiliary dispatchers now also have explicit inventory rows. See [auxiliary-drivers.md](auxiliary-drivers.md).
+
+| Address | Applied name | Prototype |
 |---|---|---|
+| `0x100724` | `MvdY2rInitializeInterrupt` | `Result MvdY2rInitializeInterrupt(void)` |
+| `0x100790` | `MvdY2rFinalizeInterrupt` | `Result MvdY2rFinalizeInterrupt(void)` |
+| `0x100B54` | `MvdL2bSetControlBit29` | `Result MvdL2bSetControlBit29(MvdL2bRegisterContext *registers, s32 enable)` |
+| `0x100B74` | `MvdY2rSetControlBit29` | `Result MvdY2rSetControlBit29(MvdY2rRegisterContext *registers, s32 enable)` |
 | `0x1012B0` | `AllocateAsicBuffers` | `u32 AllocateAsicBuffers(MvdH264Container *decoder,MvdH264AsicBuffers *buffers,u32 picSizeInMbs)` |
 | `0x101374` | `MvdFlushPpOutputBeforeStart` | `void MvdFlushPpOutputBeforeStart(const MvdDwlInstance *dwl)` |
 | `0x1013E4` | `CheckIntraChromaPrediction` | `u32 CheckIntraChromaPrediction(u32 predictionMode,u32 availableA,u32 availableB,u32 availableD)` |
@@ -143,11 +149,36 @@ The database currently contains 796 function entries. `0x115CDE`, formerly `sub_
 | `0x10B0A0` | `h264bsdAllocateDpbImage` | `MvdLinearMem *h264bsdAllocateDpbImage(MvdH264Dpb *dpb)` |
 | `0x10B17C` | `CheckPps` | `u32 CheckPps(MvdH264Pps *pps,MvdH264Sps *sps)` |
 | `0x10B20A` | `h264DpbUpdateOutputList` | `void h264DpbUpdateOutputList(MvdH264Dpb *dpb)` |
+| `0x10B37E` | `MvdL2bConstructContext` | `MvdL2bContext * MvdL2bConstructContext(MvdL2bContext *context)` |
+| `0x10B3C0` | `MvdY2rInvalidCoefficientResult` | `Result MvdY2rInvalidCoefficientResult(void)` |
 | `0x10B3C8` | `MvdIsClientLinearRange` | `u32 MvdIsClientLinearRange(u32 address,u32 size)` |
 | `0x10B3F0` | `MvdCalculateMacroblocks` | `u32 MvdCalculateMacroblocks(u32 height, u32 width)` |
-| `0x10B43C` | `MvdY2rReadStandardCoefficients` | `Result MvdY2rReadStandardCoefficients(void *registerContext, MvdY2rCoefficients *output, u32 index)` |
+| `0x10B43C` | `MvdY2rReadStandardCoefficients` | `Result MvdY2rReadStandardCoefficients(MvdY2rRegisterContext *registers, MvdY2rCoefficients *output, u32 index)` |
+| `0x10B48C` | `MvdY2rWriteStandardCoefficients` | `Result MvdY2rWriteStandardCoefficients(MvdY2rRegisterContext *registers, u32 index)` |
+| `0x10B4C0` | `MvdY2rReadAlpha` | `Result MvdY2rReadAlpha(MvdY2rRegisterContext *registers, u16 *alpha)` |
+| `0x10B4D4` | `MvdY2rReadCoefficients` | `Result MvdY2rReadCoefficients(MvdY2rRegisterContext *registers, MvdY2rCoefficients *coefficients)` |
+| `0x10B53C` | `MvdY2rReadLineWidth` | `Result MvdY2rReadLineWidth(MvdY2rRegisterContext *registers, u16 *width)` |
+| `0x10B550` | `MvdY2rReadBlockAlignmentBits` | `Result MvdY2rReadBlockAlignmentBits(MvdY2rRegisterContext *registers, u16 *bits)` |
+| `0x10B568` | `MvdY2rReadBusy` | `Result MvdY2rReadBusy(MvdY2rRegisterContext *registers, u8 *busy)` |
+| `0x10B57C` | `MvdY2rReadOutputFormatBits` | `Result MvdY2rReadOutputFormatBits(MvdY2rRegisterContext *registers, u16 *bits)` |
+| `0x10B594` | `MvdY2rReadInputFormat` | `Result MvdY2rReadInputFormat(MvdY2rRegisterContext *registers, u8 *format)` |
+| `0x10B5AC` | `MvdY2rReadLines` | `Result MvdY2rReadLines(MvdY2rRegisterContext *registers, u16 *lines)` |
+| `0x10B5C0` | `MvdY2rReadRotationBits` | `Result MvdY2rReadRotationBits(MvdY2rRegisterContext *registers, u16 *bits)` |
 | `0x10B5D8` | `MvdClientVirtualToBus` | `u32 MvdClientVirtualToBus(u32 address, u32 size)` |
 | `0x10B608` | `MvdConvertLibraryResult` | `Result MvdConvertLibraryResult(s32 status, u32 codecClass, u32 postprocessor)` |
+| `0x10B84E` | `MvdDmaDestroyHandle` | `Handle * MvdDmaDestroyHandle(Handle *dma)` |
+| `0x10B860` | `MvdL2bReadAlpha` | `Result MvdL2bReadAlpha(MvdL2bRegisterContext *registers, u16 *alpha)` |
+| `0x10B874` | `MvdDmaIsDone` | `u32 MvdDmaIsDone(const Handle *dma)` |
+| `0x10B8A0` | `MvdL2bReadLineWidth` | `Result MvdL2bReadLineWidth(MvdL2bRegisterContext *registers, u16 *width)` |
+| `0x10B8BC` | `MvdL2bReadBusy` | `Result MvdL2bReadBusy(MvdL2bRegisterContext *registers, u8 *busy)` |
+| `0x10B8D0` | `MvdL2bReadOutputFormatBits` | `Result MvdL2bReadOutputFormatBits(MvdL2bRegisterContext *registers, u16 *bits)` |
+| `0x10B8E8` | `MvdL2bReadInputFormat` | `Result MvdL2bReadInputFormat(MvdL2bRegisterContext *registers, u8 *format)` |
+| `0x10B900` | `MvdL2bReadLines` | `Result MvdL2bReadLines(MvdL2bRegisterContext *registers, u16 *lines)` |
+| `0x10B914` | `MvdDmaGetState` | `u8 MvdDmaGetState(const Handle *dma)` |
+| `0x10B936` | `MvdDmaTryStart` | `u32 MvdDmaTryStart(Handle *dma, Handle dstProcess, u32 dstAddress, Handle srcProcess, u32 srcAddress, u32 size, const MvdDmaConfig *config)` |
+| `0x10B97C` | `svcStoreProcessDataCache` | `Result svcStoreProcessDataCache(Handle process, u32 address, u32 size)` |
+| `0x10B984` | `MvdIpcHasSharedHandleDescriptor` | `u32 MvdIpcHasSharedHandleDescriptor(u32 **buffer, u32 wordIndex, u32 handleCount)` |
+| `0x10B99E` | `MvdIpcHasExactHeader` | `u32 MvdIpcHasExactHeader(u32 **buffer, u32 commandId, u32 normalWords, u32 translatedWords, u32 extra)` |
 | `0x10B9BE` | `MvdTranslateLinearRange` | `u32 MvdTranslateLinearRange(u32 address, u32 size, u32 rangeBegin, u32 rangeEnd, u32 busBase)` |
 | `0x10B9DE` | `MvdWaitEventRaw` | `Result MvdWaitEventRaw(const Handle *event,s64 timeoutNs)` |
 | `0x10B9E8` | `WriteBlock` | `void WriteBlock(const unsigned short *rlc,u32 *pendingWord,u32 **output,u32 *halfwordCount)` |
@@ -245,6 +276,7 @@ The database currently contains 796 function entries. `0x115CDE`, formerly `sub_
 | `0x10E8A4` | `h264bsdResetStorage` | `void h264bsdResetStorage(MvdH264Storage *storage)` |
 | `0x10E8E0` | `h264AllocateResources` | `u32 h264AllocateResources(MvdH264Container *decoder)` |
 | `0x10E9D4` | `MvdYuv420ReferenceBufferBytes` | `u32 MvdYuv420ReferenceBufferBytes(u32 height, u32 width, u32 count)` |
+| `0x10E9E8` | `MvdSignedDivideWithRemainder` | `MvdDivModResult __usercall MvdSignedDivideWithRemainder@<R1:R0>(s32 dividend@<R0>, s32 divisor@<R1>)` |
 | `0x10EB64` | `IsLongTerm` | `u32 IsLongTerm(const MvdH264DpbPicture *picture,u32 field)` |
 | `0x10EB82` | `h264bsdIsNeighbourAvailable` | `u32 h264bsdIsNeighbourAvailable(const MvdH264MbStorage *mb,const MvdH264MbStorage *neighbor)` |
 | `0x10EB98` | `h264bsdNeighbour4x4BlockB` | `const MvdH264Neighbour *h264bsdNeighbour4x4BlockB(u32 blockIndex)` |
@@ -277,10 +309,59 @@ The database currently contains 796 function entries. `0x115CDE`, formerly `sub_
 | `0x10F780` | `DWLmemcpy` | `void *DWLmemcpy(void *dest, const void *source, u32 size)` |
 | `0x10F788` | `DWLMallocLinear` | `i32 DWLMallocLinear(MvdDwlInstance *dwl,u32 size,MvdLinearMem *buffer)` |
 | `0x10F82C` | `MvdHeapAlloc` | `void *MvdHeapAlloc(u32 size)` |
-| `0x10FDB4` | `MvdL2bWriteOutputFormat` | `Result MvdL2bWriteOutputFormat(u32 *registerOffset, u32 shiftedFormat)` |
-| `0x10FDD0` | `MvdL2bWriteInputFormat` | `Result MvdL2bWriteInputFormat(u32 *registerOffset, u32 format)` |
+| `0x10F85C` | `MvdIpcBuildHeader` | `u32 MvdIpcBuildHeader(u32 commandId, u32 normalWords, u32 translatedWords, u32 extra)` |
+| `0x10F874` | `MvdY2rInvalidDimensionsResult` | `Result MvdY2rInvalidDimensionsResult(void)` |
+| `0x10F87C` | `MvdL2bInvalidDimensionsResult` | `Result MvdL2bInvalidDimensionsResult(void)` |
+| `0x10F898` | `MvdY2rSetControlBit23` | `Result MvdY2rSetControlBit23(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10F8B8` | `MvdY2rSetControlBit22` | `Result MvdY2rSetControlBit22(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10F8D8` | `MvdY2rSetTransferEndInterrupt` | `Result MvdY2rSetTransferEndInterrupt(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10F8F8` | `MvdY2rWriteBackControlBit28` | `Result MvdY2rWriteBackControlBit28(MvdY2rRegisterContext *registers)` |
+| `0x10F914` | `MvdY2rWriteBackControlBit27` | `Result MvdY2rWriteBackControlBit27(MvdY2rRegisterContext *registers)` |
+| `0x10F930` | `MvdY2rWriteBackControlBit26` | `Result MvdY2rWriteBackControlBit26(MvdY2rRegisterContext *registers)` |
+| `0x10F94C` | `MvdY2rWriteBackControlBit25` | `Result MvdY2rWriteBackControlBit25(MvdY2rRegisterContext *registers)` |
+| `0x10F968` | `MvdY2rWriteBackControlBit24` | `Result MvdY2rWriteBackControlBit24(MvdY2rRegisterContext *registers)` |
+| `0x10F984` | `MvdY2rWriteAlpha` | `Result MvdY2rWriteAlpha(MvdY2rRegisterContext *registers, u8 alpha)` |
+| `0x10F998` | `MvdY2rWriteLines` | `Result MvdY2rWriteLines(MvdY2rRegisterContext *registers, s32 lines)` |
+| `0x10F9C4` | `MvdY2rWriteLineWidth` | `Result MvdY2rWriteLineWidth(MvdY2rRegisterContext *registers, s32 width)` |
+| `0x10F9FC` | `MvdY2rWriteDitherWeights` | `Result MvdY2rWriteDitherWeights(MvdY2rRegisterContext *registers, MvdY2rDitherWeights weights)` |
+| `0x10FB30` | `MvdY2rSetTemporalDithering` | `Result MvdY2rSetTemporalDithering(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10FB50` | `MvdY2rSetSpatialDithering` | `Result MvdY2rSetSpatialDithering(MvdY2rRegisterContext *registers, s32 enable)` |
+| `0x10FB70` | `MvdY2rWriteCoefficients` | `Result MvdY2rWriteCoefficients(MvdY2rRegisterContext *registers, MvdY2rCoefficients coefficients)` |
+| `0x10FC00` | `MvdY2rWriteBlockAlignmentBits` | `Result MvdY2rWriteBlockAlignmentBits(MvdY2rRegisterContext *registers, u32 bits)` |
+| `0x10FC1C` | `MvdY2rWriteRotationBits` | `Result MvdY2rWriteRotationBits(MvdY2rRegisterContext *registers, u32 bits)` |
+| `0x10FC38` | `MvdY2rWriteOutputFormatBits` | `Result MvdY2rWriteOutputFormatBits(MvdY2rRegisterContext *registers, u32 bits)` |
+| `0x10FC54` | `MvdY2rWriteInputFormat` | `Result MvdY2rWriteInputFormat(MvdY2rRegisterContext *registers, u32 format)` |
+| `0x10FC6C` | `MvdY2rWriteReset` | `Result MvdY2rWriteReset(MvdY2rRegisterContext *registers)` |
+| `0x10FC80` | `MvdY2rStop` | `Result MvdY2rStop(MvdY2rRegisterContext *registers)` |
+| `0x10FC98` | `MvdL2bSetControlBit23` | `Result MvdL2bSetControlBit23(MvdL2bRegisterContext *registers, s32 enable)` |
+| `0x10FCB8` | `MvdL2bSetControlBit22` | `Result MvdL2bSetControlBit22(MvdL2bRegisterContext *registers, s32 enable)` |
+| `0x10FCD8` | `MvdL2bSetTransferEndInterrupt` | `Result MvdL2bSetTransferEndInterrupt(MvdL2bRegisterContext *registers, s32 enable)` |
+| `0x10FCF8` | `MvdL2bWriteBackControlBit25` | `Result MvdL2bWriteBackControlBit25(MvdL2bRegisterContext *registers)` |
+| `0x10FD14` | `MvdL2bWriteBackControlBit24` | `Result MvdL2bWriteBackControlBit24(MvdL2bRegisterContext *registers)` |
+| `0x10FD30` | `MvdL2bWriteAlpha` | `Result MvdL2bWriteAlpha(MvdL2bRegisterContext *registers, u8 alpha)` |
+| `0x10FD44` | `MvdL2bWriteLines` | `Result MvdL2bWriteLines(MvdL2bRegisterContext *registers, s32 lines)` |
+| `0x10FD7C` | `MvdL2bWriteLineWidth` | `Result MvdL2bWriteLineWidth(MvdL2bRegisterContext *registers, s32 width)` |
+| `0x10FDB4` | `MvdL2bWriteOutputFormat` | `Result MvdL2bWriteOutputFormat(MvdL2bRegisterContext *registers, u32 shiftedFormat)` |
+| `0x10FDD0` | `MvdL2bWriteInputFormat` | `Result MvdL2bWriteInputFormat(MvdL2bRegisterContext *registers, u32 format)` |
+| `0x10FDE8` | `MvdL2bWriteReset` | `Result MvdL2bWriteReset(MvdL2bRegisterContext *registers)` |
+| `0x10FDFC` | `MvdL2bStop` | `Result MvdL2bStop(MvdL2bRegisterContext *registers)` |
 | `0x10FEF0` | `MVDY2R_DriverFinalize` | `Result MVDY2R_DriverFinalize(void)` |
+| `0x10FF54` | `MvdL2bCloseSession` | `Result MvdL2bCloseSession(MvdL2bContext *context)` |
+| `0x10FF98` | `MvdY2rRegistersFinalize` | `Result MvdY2rRegistersFinalize(MvdY2rRegisterContext *registers)` |
+| `0x10FFF4` | `MvdY2rRegistersInitialize` | `Result MvdY2rRegistersInitialize(MvdY2rRegisterContext *registers, u32 engine)` |
+| `0x110114` | `MvdIpcReadWord` | `u32 MvdIpcReadWord(u32 **buffer, u32 wordIndex)` |
 | `0x110138` | `MvdIpcWriteResponseHeader` | `u32 MvdIpcWriteResponseHeader(u32 **buffer, u32 command, u32 normalWords, u32 translatedWords, u32 extra)` |
+| `0x11019C` | `svcUnbindInterrupt` | `Result svcUnbindInterrupt(u32 interruptId, Handle event)` |
+| `0x1101A4` | `MvdDmaStopAndClose` | `Result MvdDmaStopAndClose(Handle *dma)` |
+| `0x1101B4` | `MvdDmaStop` | `Result MvdDmaStop(const Handle *dma)` |
+| `0x1101CC` | `MvdL2bRegistersFinalize` | `Result MvdL2bRegistersFinalize(MvdL2bRegisterContext *registers)` |
+| `0x110218` | `svcBindInterrupt` | `Result svcBindInterrupt(u32 interruptId, Handle event, s32 priority, u8 manualClear)` |
+| `0x11026C` | `svcCreateEvent` | `Result svcCreateEvent(Handle *event, u32 resetType)` |
+| `0x110284` | `MvdL2bRegistersInitialize` | `Result MvdL2bRegistersInitialize(MvdL2bRegisterContext *registers, u32 engine)` |
+| `0x110314` | `MvdCloseOwnedHandle` | `Result MvdCloseOwnedHandle(Handle *handle)` |
+| `0x110328` | `MvdL2bFinalizeInterrupt` | `Result MvdL2bFinalizeInterrupt(MvdL2bContext *context)` |
+| `0x110398` | `MvdL2bOpenSession` | `Result MvdL2bOpenSession(MvdL2bContext *context)` |
+| `0x1103D8` | `MvdL2bInitializeInterrupt` | `Result MvdL2bInitializeInterrupt(MvdL2bContext *context, u32 engine)` |
 | `0x1104D8` | `VP6HwdAsicRun` | `u32 VP6HwdAsicRun(MvdVp6Container *decoder)` |
 | `0x1106D4` | `VP6HwdAsicStrmPosUpdate` | `void VP6HwdAsicStrmPosUpdate(MvdVp6Container *decoder)` |
 | `0x1107CC` | `VP8DecDecode` | `VP8DecRet VP8DecDecode(VP8DecInst instance, const VP8DecInput *input, VP8DecOutput *output)` |
@@ -298,30 +379,32 @@ The database currently contains 796 function entries. `0x115CDE`, formerly `sub_
 | `0x111A4C` | `MvdWaitDecoderStatus` | `i32 MvdWaitDecoderStatus(void)` |
 | `0x111A9C` | `MvdWaitPostprocessorStatus` | `i32 MvdWaitPostprocessorStatus(void)` |
 | `0x111AF8` | `WriteRlcToAsic` | `void WriteRlcToAsic(u8 mbType,u32 codedBlockPattern,MvdH264Residual *residual,MvdH264AsicBuffers *asic)` |
-| `0x11216C` | `MVDL2B_SetSending` | `Result MVDL2B_SetSending(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x112238` | `MVDL2B_PingProcess` | `Result MVDL2B_PingProcess(void *context, u8 *sessions)` |
-| `0x112242` | `MVDL2B_SetReceiving` | `Result MVDL2B_SetReceiving(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x112268` | `MVDL2B_GetInputLines` | `Result MVDL2B_GetInputLines(void *context, u16 *lines)` |
-| `0x112272` | `MVDL2B_SetInputLines` | `Result MVDL2B_SetInputLines(void *context, u16 lines)` |
-| `0x11227C` | `MVDL2B_GetInputFormat` | `Result MVDL2B_GetInputFormat(void *context, u8 *format)` |
-| `0x112290` | `MVDL2B_SetInputFormat` | `Result MVDL2B_SetInputFormat(void *context, u8 format)` |
-| `0x11229A` | `MVDL2B_StopConversion` | `Result MVDL2B_StopConversion(void *context)` |
-| `0x1122A4` | `MVDL2B_GetOutputFormat` | `Result MVDL2B_GetOutputFormat(void *context, u8 *format)` |
-| `0x1122BA` | `MVDL2B_SetOutputFormat` | `Result MVDL2B_SetOutputFormat(void *context, u8 format)` |
-| `0x1122C8` | `MVDL2B_StartConversion` | `Result MVDL2B_StartConversion(void *context)` |
-| `0x11230C` | `MVDL2B_IsBusyConversion` | `Result MVDL2B_IsBusyConversion(void *context, u8 *busy)` |
-| `0x112318` | `MvdL2bConfigureReceivingDma` | `Result MvdL2bConfigureReceivingDma(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x1123D4` | `MVDL2B_GetInputLineWidth` | `Result MVDL2B_GetInputLineWidth(void *context, u16 *width)` |
-| `0x1123DE` | `MVDL2B_IsDoneSending` | `Result MVDL2B_IsDoneSending(void *context, u8 *done)` |
-| `0x1123EE` | `MVDL2B_SetInputLineWidth` | `Result MVDL2B_SetInputLineWidth(void *context, u16 width)` |
-| `0x1123F8` | `MVDL2B_GetPackageParameter` | `Result MVDL2B_GetPackageParameter(void *context, MvdL2bParams *params)` |
-| `0x112444` | `MVDL2B_GetTransferEndEvent` | `Result MVDL2B_GetTransferEndEvent(void *context, Handle *event)` |
-| `0x11244C` | `MVDL2B_IsDoneReceiving` | `Result MVDL2B_IsDoneReceiving(void *context, u8 *done)` |
-| `0x11245C` | `MVDL2B_SetPackageParameter` | `Result MVDL2B_SetPackageParameter(void *context, MvdL2bParams *params)` |
-| `0x1124A4` | `MVDL2B_GetTransferEndInterrupt` | `Result MVDL2B_GetTransferEndInterrupt(void *context, u8 *enable)` |
-| `0x1124AE` | `MVDL2B_SetTransferEndInterrupt` | `Result MVDL2B_SetTransferEndInterrupt(void *context, s8 enable)` |
-| `0x1124B8` | `MVDL2B_GetAlpha` | `Result MVDL2B_GetAlpha(void *context, u16 *alpha)` |
-| `0x1124C2` | `MVDL2B_SetAlpha` | `Result MVDL2B_SetAlpha(void *context, u16 alpha)` |
+| `0x111E64` | `L2BU_HandleCommands` | `void L2BU_HandleCommands(MvdL2bContext *context)` |
+| `0x11216C` | `MVDL2B_SetSending` | `Result MVDL2B_SetSending(MvdL2bContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x112238` | `MVDL2B_PingProcess` | `Result MVDL2B_PingProcess(MvdL2bContext *context, u8 *sessions)` |
+| `0x112242` | `MVDL2B_SetReceiving` | `Result MVDL2B_SetReceiving(MvdL2bContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x112268` | `MVDL2B_GetInputLines` | `Result MVDL2B_GetInputLines(MvdL2bContext *context, u16 *lines)` |
+| `0x112272` | `MVDL2B_SetInputLines` | `Result MVDL2B_SetInputLines(MvdL2bContext *context, s16 lines)` |
+| `0x11227C` | `MVDL2B_GetInputFormat` | `Result MVDL2B_GetInputFormat(MvdL2bContext *context, u8 *format)` |
+| `0x112290` | `MVDL2B_SetInputFormat` | `Result MVDL2B_SetInputFormat(MvdL2bContext *context, u8 format)` |
+| `0x11229A` | `MVDL2B_StopConversion` | `Result MVDL2B_StopConversion(MvdL2bContext *context)` |
+| `0x1122A4` | `MVDL2B_GetOutputFormat` | `Result MVDL2B_GetOutputFormat(MvdL2bContext *context, u8 *format)` |
+| `0x1122BA` | `MVDL2B_SetOutputFormat` | `Result MVDL2B_SetOutputFormat(MvdL2bContext *context, u8 format)` |
+| `0x1122C8` | `MVDL2B_StartConversion` | `Result MVDL2B_StartConversion(MvdL2bContext *context)` |
+| `0x11230C` | `MVDL2B_IsBusyConversion` | `Result MVDL2B_IsBusyConversion(MvdL2bContext *context, u8 *busy)` |
+| `0x112318` | `MvdL2bConfigureReceivingDma` | `Result MvdL2bConfigureReceivingDma(MvdL2bContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x1123D4` | `MVDL2B_GetInputLineWidth` | `Result MVDL2B_GetInputLineWidth(MvdL2bContext *context, u16 *width)` |
+| `0x1123DE` | `MVDL2B_IsDoneSending` | `Result MVDL2B_IsDoneSending(MvdL2bContext *context, u8 *done)` |
+| `0x1123EE` | `MVDL2B_SetInputLineWidth` | `Result MVDL2B_SetInputLineWidth(MvdL2bContext *context, s16 width)` |
+| `0x1123F8` | `MVDL2B_GetPackageParameter` | `Result MVDL2B_GetPackageParameter(MvdL2bContext *context, MvdL2bParams *params)` |
+| `0x112444` | `MVDL2B_GetTransferEndEvent` | `Result MVDL2B_GetTransferEndEvent(MvdL2bContext *context, Handle *event)` |
+| `0x11244C` | `MVDL2B_IsDoneReceiving` | `Result MVDL2B_IsDoneReceiving(MvdL2bContext *context, u8 *done)` |
+| `0x11245C` | `MVDL2B_SetPackageParameter` | `Result MVDL2B_SetPackageParameter(MvdL2bContext *context, MvdL2bParams *params)` |
+| `0x1124A4` | `MVDL2B_GetTransferEndInterrupt` | `Result MVDL2B_GetTransferEndInterrupt(MvdL2bContext *context, u8 *enable)` |
+| `0x1124AE` | `MVDL2B_SetTransferEndInterrupt` | `Result MVDL2B_SetTransferEndInterrupt(MvdL2bContext *context, s8 enable)` |
+| `0x1124B8` | `MVDL2B_GetAlpha` | `Result MVDL2B_GetAlpha(MvdL2bContext *context, u16 *alpha)` |
+| `0x1124C2` | `MVDL2B_SetAlpha` | `Result MVDL2B_SetAlpha(MvdL2bContext *context, u16 alpha)` |
+| `0x1124CC` | `MvdL2bDestroyContext` | `MvdL2bContext * MvdL2bDestroyContext(MvdL2bContext *context)` |
 | `0x112BC4` | `MvdNormalizeLibraryStatus` | `u16 MvdNormalizeLibraryStatus(s32 status, u32 codecClass, u32 postprocessor)` |
 | `0x112C04` | `MVDSTD_H264Decode` | `Result MVDSTD_H264Decode(MvdSession *session, Handle process, H264DecInput input, H264DecOutput *output)` |
 | `0x112C6C` | `MVDSTD_Vp6GetInfo` | `Result MVDSTD_Vp6GetInfo(MvdSession *session, MvdVp6Info *info)` |
@@ -356,53 +439,64 @@ The database currently contains 796 function entries. `0x115CDE`, formerly `sub_
 | `0x113178` | `MVDSTD_Vp6Decode` | `Result MVDSTD_Vp6Decode(MvdSession *session, Handle process, VP6DecInput input, VP6DecOutput *output)` |
 | `0x1131E0` | `MVDSTD_Vp8Decode` | `Result MVDSTD_Vp8Decode(MvdSession *session, Handle process, VP8DecInput input, VP8DecOutput *output)` |
 | `0x113248` | `MVDSTD_PpRelease` | `Result MVDSTD_PpRelease(MvdSession *session)` |
-| `0x1138B0` | `MVDY2R_GetRotation` | `Result MVDY2R_GetRotation(void *context, u8 *rotation)` |
-| `0x1138CC` | `MVDY2R_PingProcess` | `Result MVDY2R_PingProcess(void *context, u8 *sessions)` |
-| `0x1138DC` | `MVDY2R_SetRotation` | `Result MVDY2R_SetRotation(void *context, u8 rotation)` |
-| `0x1138F0` | `MVDY2R_SetSendingU` | `Result MVDY2R_SetSendingU(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x1139B0` | `MVDY2R_SetSendingV` | `Result MVDY2R_SetSendingV(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x113A70` | `MVDY2R_SetSendingY` | `Result MVDY2R_SetSendingY(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x113B30` | `MVDY2R_SetReceiving` | `Result MVDY2R_SetReceiving(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x113B58` | `MVDY2R_GetInputLines` | `Result MVDY2R_GetInputLines(void *context, u16 *lines)` |
-| `0x113B68` | `MVDY2R_SetInputLines` | `Result MVDY2R_SetInputLines(void *context, u16 lines)` |
-| `0x113B78` | `MVDY2R_SetSendingYUYV` | `Result MVDY2R_SetSendingYUYV(void *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
-| `0x113BA0` | `MVDY2R_GetInputFormat` | `Result MVDY2R_GetInputFormat(void *context, u8 *format)` |
-| `0x113BB8` | `MVDY2R_SetInputFormat` | `Result MVDY2R_SetInputFormat(void *context, u8 format)` |
+| `0x11328C` | `Y2RU_HandleCommands` | `void Y2RU_HandleCommands(MvdY2rContext *context)` |
+| `0x1138B0` | `MVDY2R_GetRotation` | `Result MVDY2R_GetRotation(MvdY2rContext *context, u8 *rotation)` |
+| `0x1138CC` | `MVDY2R_PingProcess` | `Result MVDY2R_PingProcess(MvdY2rContext *context, u8 *sessions)` |
+| `0x1138DC` | `MVDY2R_SetRotation` | `Result MVDY2R_SetRotation(MvdY2rContext *context, u8 rotation)` |
+| `0x1138F0` | `MVDY2R_SetSendingU` | `Result MVDY2R_SetSendingU(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x1139B0` | `MVDY2R_SetSendingV` | `Result MVDY2R_SetSendingV(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x113A70` | `MVDY2R_SetSendingY` | `Result MVDY2R_SetSendingY(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x113B30` | `MVDY2R_SetReceiving` | `Result MVDY2R_SetReceiving(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x113B58` | `MVDY2R_GetInputLines` | `Result MVDY2R_GetInputLines(MvdY2rContext *context, u16 *lines)` |
+| `0x113B68` | `MVDY2R_SetInputLines` | `Result MVDY2R_SetInputLines(MvdY2rContext *context, s16 lines)` |
+| `0x113B78` | `MVDY2R_SetSendingYUYV` | `Result MVDY2R_SetSendingYUYV(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x113BA0` | `MVDY2R_GetInputFormat` | `Result MVDY2R_GetInputFormat(MvdY2rContext *context, u8 *format)` |
+| `0x113BB8` | `MVDY2R_SetInputFormat` | `Result MVDY2R_SetInputFormat(MvdY2rContext *context, u8 format)` |
 | `0x113BC8` | `MVDY2R_StopConversion` | `Result MVDY2R_StopConversion(void)` |
-| `0x113BD8` | `MVDY2R_GetOutputFormat` | `Result MVDY2R_GetOutputFormat(void *context, u8 *format)` |
-| `0x113BF4` | `MVDY2R_SetOutputFormat` | `Result MVDY2R_SetOutputFormat(void *context, u8 format)` |
+| `0x113BD8` | `MVDY2R_GetOutputFormat` | `Result MVDY2R_GetOutputFormat(MvdY2rContext *context, u8 *format)` |
+| `0x113BF4` | `MVDY2R_SetOutputFormat` | `Result MVDY2R_SetOutputFormat(MvdY2rContext *context, u8 format)` |
 | `0x113C04` | `MVDY2R_StartConversion` | `Result MVDY2R_StartConversion(void)` |
 | `0x113C68` | `MVDY2R_DriverInitialize` | `Result MVDY2R_DriverInitialize(void)` |
 | `0x113C8C` | `MVDY2R_IsBusyConversion` | `Result MVDY2R_IsBusyConversion(u8 *busy)` |
-| `0x113D48` | `MVDY2R_GetBlockAlignment` | `Result MVDY2R_GetBlockAlignment(void *context, u8 *alignment)` |
-| `0x113D64` | `MVDY2R_GetInputLineWidth` | `Result MVDY2R_GetInputLineWidth(void *context, u16 *width)` |
-| `0x113D74` | `MVDY2R_SetBlockAlignment` | `Result MVDY2R_SetBlockAlignment(void *context, u8 alignment)` |
-| `0x113D88` | `MVDY2R_SetInputLineWidth` | `Result MVDY2R_SetInputLineWidth(void *context, u16 width)` |
-| `0x113E64` | `MVDY2R_IsDoneSendingU` | `Result MVDY2R_IsDoneSendingU(void *context, u8 *done)` |
-| `0x113E78` | `MVDY2R_IsDoneSendingV` | `Result MVDY2R_IsDoneSendingV(void *context, u8 *done)` |
-| `0x113E8C` | `MVDY2R_IsDoneSendingY` | `Result MVDY2R_IsDoneSendingY(void *context, u8 *done)` |
-| `0x113EA0` | `MVDY2R_GetConversionParams` | `Result MVDY2R_GetConversionParams(void *context, MvdY2rParams *params)` |
-| `0x113F98` | `MVDY2R_GetSpacialDithering` | `Result MVDY2R_GetSpacialDithering(void *context, u8 *enable)` |
-| `0x113FA8` | `MVDY2R_GetTransferEndEvent` | `Result MVDY2R_GetTransferEndEvent(void *context, Handle *event)` |
-| `0x113FB8` | `MVDY2R_IsDoneReceiving` | `Result MVDY2R_IsDoneReceiving(void *context, u8 *done)` |
-| `0x113FCC` | `MVDY2R_SetConversionParams` | `Result MVDY2R_SetConversionParams(void *context, MvdY2rParams *params)` |
-| `0x114044` | `MVDY2R_SetSpacialDithering` | `Result MVDY2R_SetSpacialDithering(void *context, s8 enable)` |
-| `0x114054` | `MVDY2R_GetCoefficients` | `Result MVDY2R_GetCoefficients(void *context, MvdY2rCoefficients *coefficients)` |
-| `0x114064` | `MVDY2R_GetTemporalDithering` | `Result MVDY2R_GetTemporalDithering(void *context, u8 *enable)` |
-| `0x114074` | `MVDY2R_IsDoneSendingYUYV` | `Result MVDY2R_IsDoneSendingYUYV(void *context, u8 *done)` |
-| `0x114088` | `MVDY2R_SetCoefficients` | `Result MVDY2R_SetCoefficients(void *context, MvdY2rCoefficients coefficients)` |
-| `0x1140D4` | `MVDY2R_SetTemporalDithering` | `Result MVDY2R_SetTemporalDithering(void *context, s8 enable)` |
-| `0x1140E4` | `MVDY2R_SetStandardCoefficient` | `Result MVDY2R_SetStandardCoefficient(void *context, u8 index)` |
-| `0x1140F4` | `MVDY2R_GetTransferEndInterrupt` | `Result MVDY2R_GetTransferEndInterrupt(void *context, u8 *enable)` |
-| `0x114104` | `MVDY2R_SetTransferEndInterrupt` | `Result MVDY2R_SetTransferEndInterrupt(void *context, s8 enable)` |
-| `0x114114` | `MVDY2R_GetDitheringWeightParams` | `Result MVDY2R_GetDitheringWeightParams(void *context, MvdY2rDitherWeights *weights)` |
-| `0x11418C` | `MVDY2R_SetDitheringWeightParams` | `Result MVDY2R_SetDitheringWeightParams(void *context, MvdY2rDitherWeights weights)` |
-| `0x11422C` | `MVDY2R_GetStandardCoefficient` | `Result MVDY2R_GetStandardCoefficient(void *context, MvdY2rCoefficients *coefficients, u8 index)` |
-| `0x11423C` | `MVDY2R_GetAlpha` | `Result MVDY2R_GetAlpha(void *context, u16 *alpha)` |
-| `0x11424C` | `MVDY2R_SetAlpha` | `Result MVDY2R_SetAlpha(void *context, u16 alpha)` |
+| `0x113C9C` | `MvdY2rConfigureReceivingDma` | `Result MvdY2rConfigureReceivingDma(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x113D48` | `MVDY2R_GetBlockAlignment` | `Result MVDY2R_GetBlockAlignment(MvdY2rContext *context, u8 *alignment)` |
+| `0x113D64` | `MVDY2R_GetInputLineWidth` | `Result MVDY2R_GetInputLineWidth(MvdY2rContext *context, u16 *width)` |
+| `0x113D74` | `MVDY2R_SetBlockAlignment` | `Result MVDY2R_SetBlockAlignment(MvdY2rContext *context, u8 alignment)` |
+| `0x113D88` | `MVDY2R_SetInputLineWidth` | `Result MVDY2R_SetInputLineWidth(MvdY2rContext *context, s16 width)` |
+| `0x113D98` | `MvdY2rConfigureSendingYuyvDma` | `Result MvdY2rConfigureSendingYuyvDma(MvdY2rContext *context, Handle process, void *address, u32 size, s16 unit, s16 gap)` |
+| `0x113E64` | `MVDY2R_IsDoneSendingU` | `Result MVDY2R_IsDoneSendingU(MvdY2rContext *context, u8 *done)` |
+| `0x113E78` | `MVDY2R_IsDoneSendingV` | `Result MVDY2R_IsDoneSendingV(MvdY2rContext *context, u8 *done)` |
+| `0x113E8C` | `MVDY2R_IsDoneSendingY` | `Result MVDY2R_IsDoneSendingY(MvdY2rContext *context, u8 *done)` |
+| `0x113EA0` | `MVDY2R_GetConversionParams` | `Result MVDY2R_GetConversionParams(MvdY2rContext *context, MvdY2rParams *params)` |
+| `0x113F98` | `MVDY2R_GetSpacialDithering` | `Result MVDY2R_GetSpacialDithering(MvdY2rContext *context, u8 *enable)` |
+| `0x113FA8` | `MVDY2R_GetTransferEndEvent` | `Result MVDY2R_GetTransferEndEvent(MvdY2rContext *context, Handle *event)` |
+| `0x113FB8` | `MVDY2R_IsDoneReceiving` | `Result MVDY2R_IsDoneReceiving(MvdY2rContext *context, u8 *done)` |
+| `0x113FCC` | `MVDY2R_SetConversionParams` | `Result MVDY2R_SetConversionParams(MvdY2rContext *context, MvdY2rParams *params)` |
+| `0x114044` | `MVDY2R_SetSpacialDithering` | `Result MVDY2R_SetSpacialDithering(MvdY2rContext *context, s8 enable)` |
+| `0x114054` | `MVDY2R_GetCoefficients` | `Result MVDY2R_GetCoefficients(MvdY2rContext *context, MvdY2rCoefficients *coefficients)` |
+| `0x114064` | `MVDY2R_GetTemporalDithering` | `Result MVDY2R_GetTemporalDithering(MvdY2rContext *context, u8 *enable)` |
+| `0x114074` | `MVDY2R_IsDoneSendingYUYV` | `Result MVDY2R_IsDoneSendingYUYV(MvdY2rContext *context, u8 *done)` |
+| `0x114088` | `MVDY2R_SetCoefficients` | `Result MVDY2R_SetCoefficients(MvdY2rContext *context, MvdY2rCoefficients coefficients)` |
+| `0x1140D4` | `MVDY2R_SetTemporalDithering` | `Result MVDY2R_SetTemporalDithering(MvdY2rContext *context, s8 enable)` |
+| `0x1140E4` | `MVDY2R_SetStandardCoefficient` | `Result MVDY2R_SetStandardCoefficient(MvdY2rContext *context, u8 index)` |
+| `0x1140F4` | `MVDY2R_GetTransferEndInterrupt` | `Result MVDY2R_GetTransferEndInterrupt(MvdY2rContext *context, u8 *enable)` |
+| `0x114104` | `MVDY2R_SetTransferEndInterrupt` | `Result MVDY2R_SetTransferEndInterrupt(MvdY2rContext *context, s8 enable)` |
+| `0x114114` | `MVDY2R_GetDitheringWeightParams` | `Result MVDY2R_GetDitheringWeightParams(MvdY2rContext *context, MvdY2rDitherWeights *weights)` |
+| `0x11418C` | `MVDY2R_SetDitheringWeightParams` | `Result MVDY2R_SetDitheringWeightParams(MvdY2rContext *context, MvdY2rDitherWeights weights)` |
+| `0x11422C` | `MVDY2R_GetStandardCoefficient` | `Result MVDY2R_GetStandardCoefficient(MvdY2rContext *context, MvdY2rCoefficients *coefficients, u8 index)` |
+| `0x11423C` | `MVDY2R_GetAlpha` | `Result MVDY2R_GetAlpha(MvdY2rContext *context, u16 *alpha)` |
+| `0x11424C` | `MVDY2R_SetAlpha` | `Result MVDY2R_SetAlpha(MvdY2rContext *context, u16 alpha)` |
 | `0x114264` | `MvdBindDecoderInterrupt` | `int MvdBindDecoderInterrupt(void)` |
 | `0x1142F8` | `MvdCalculateLevelWorkBufferSize` | `u32 MvdCalculateLevelWorkBufferSize(const MvdWorkSizeParams *params)` |
 | `0x114350` | `MvdAttachClientWorkBuffer` | `int MvdAttachClientWorkBuffer(u32 address, u32 size)` |
+| `0x114378` | `MvdL2bStart` | `Result MvdL2bStart(MvdL2bRegisterContext *registers)` |
+| `0x114390` | `MvdL2bReadTransferEndInterrupt` | `Result MvdL2bReadTransferEndInterrupt(MvdL2bRegisterContext *registers, u8 *enabled)` |
+| `0x1143A8` | `MvdY2rStart` | `Result MvdY2rStart(MvdY2rRegisterContext *registers)` |
+| `0x1143C0` | `MvdY2rReadSpatialDithering` | `Result MvdY2rReadSpatialDithering(MvdY2rRegisterContext *registers, u8 *enabled)` |
+| `0x1143D8` | `MvdY2rReadTemporalDithering` | `Result MvdY2rReadTemporalDithering(MvdY2rRegisterContext *registers, u8 *enabled)` |
+| `0x1143F0` | `MvdY2rReadTransferEndInterrupt` | `Result MvdY2rReadTransferEndInterrupt(MvdY2rRegisterContext *registers, u8 *enabled)` |
+| `0x114408` | `MvdY2rReadDitherWeights` | `Result MvdY2rReadDitherWeights(MvdY2rRegisterContext *registers, MvdY2rDitherWeights *weights)` |
+| `0x11475C` | `MvdY2rInitializeStaticState` | `Handle *MvdY2rInitializeStaticState(void)` |
 | `0x114904` | `MvdVp8CollectNeighborVectors` | `u32 MvdVp8CollectNeighborVectors(const u32 *currentMb,MvdVp8Mv *vectors,u32 *referenceIds,u32 mbY,u32 mbX,u32 validRows,u32 widthInMbs)` |
 | `0x114B58` | `h264DpbAdjStereoOutput` | `void h264DpbAdjStereoOutput(MvdH264Dpb *dpb,u32 targetCount)` |
 | `0x114B8E` | `h264GetSarInfo` | `void h264GetSarInfo(const MvdH264Storage *storage, u32 *width, u32 *height)` |
@@ -501,10 +595,15 @@ The database currently contains 796 function entries. `0x115CDE`, formerly `sub_
 | `0x1195C0` | `vp8hwdResetProbs` | `void vp8hwdResetProbs(MvdVp8Decoder *decoder)` |
 | `0x1196B0` | `vp8hwdSetPartitionOffsets` | `u32 vp8hwdSetPartitionOffsets(const u8 *stream,u32 length,MvdVp8Decoder *decoder)` |
 | `0x119742` | `vp8hwdUpdateOutBase` | `void vp8hwdUpdateOutBase(MvdVp8Container *decoder)` |
+| `0x1197B8` | `MvdBeginAuxiliaryServiceTermination` | `u8 *MvdBeginAuxiliaryServiceTermination(void)` |
 | `0x1197F0` | `MvdIpcWriteVp6Picture` | `void MvdIpcWriteVp6Picture(u32 **commandBuffer, u32 wordIndex, const MvdVp6Picture *picture)` |
 | `0x119804` | `MvdIpcWriteVp8Picture` | `void MvdIpcWriteVp8Picture(u32 **commandBuffer, u32 wordIndex, const MvdVp8Picture *picture)` |
 | `0x119818` | `MvdIpcWriteH264Picture` | `void MvdIpcWriteH264Picture(u32 **commandBuffer, u32 wordIndex, const MvdH264Picture *picture)` |
+| `0x11982C` | `MvdIpcWrite16Bytes` | `void * MvdIpcWrite16Bytes(u32 **buffer, u32 wordIndex, const void *source)` |
+| `0x119AAC` | `svcStopDma` | `Result svcStopDma(Handle dma)` |
 | `0x119CC0` | `svcClearEvent` | `Result svcClearEvent(Handle event)` |
+| `0x119CE0` | `svcGetDmaState` | `Result svcGetDmaState(u32 *state, Handle dma)` |
+| `0x119CF8` | `svcStartInterProcessDma` | `Result svcStartInterProcessDma(Handle *dma, Handle dstProcess, u32 dstAddress, Handle srcProcess, u32 srcAddress, u32 size, const MvdDmaConfig *config)` |
 | `0x119D20` | `svcWaitSynchronization` | `Result svcWaitSynchronization(Handle handle,s64 timeoutNs)` |
 | `0x119D78` | `MvdMaxDpbFramesForLevel` | `u32 MvdMaxDpbFramesForLevel(u32 height, u32 width, u32 levelIndex)` |
 | `0x119DDC` | `ceilf` | `float __usercall ceilf@<s0>(float value@<s0>)` |

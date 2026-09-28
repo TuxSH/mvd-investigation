@@ -1,8 +1,10 @@
 # Function and constant attribution coverage
 
+**Later update:** the [auxiliary-driver pass](auxiliary-drivers.md) names 95 of the 265 entries triaged below, leaving 170 unnamed. It also resolves five of the seven deferred data heads: interrupt IDs, two process pseudo-handles and both Y2R coefficient tables. Current names and prototypes are in [function-map.md](function-map.md). This document otherwise records the earlier audit checkpoint.
+
 The remaining-function sweep found no additional routine that this pass can confidently name as Hantro codec code. All 265 remaining `sub_*` entries were decompiled and reviewed with their reference context. They fall into service/driver, SDK, startup and runtime work queues, detailed in [remaining-functions.md](remaining-functions.md). This is a classification of existing entries, not proof that every instruction or indirect target has been identified.
 
-The database still has **796 function entries**, **265 `sub_*` names** and **501 documented names/prototypes**. These are different inventories: some useful names predate the documented attribution work. The 265 entries were deliberately left unnamed pending the requested final platform phase; inventing exact SDK symbols or applying ordinary C prototypes to unfamiliar runtime ABIs would overstate the evidence.
+At this audit checkpoint the database had **796 function entries**, **265 `sub_*` names** and **501 documented names/prototypes**. These are different inventories: some useful names predate the documented attribution work. The 265 entries were deliberately left unnamed pending the requested final platform phase; inventing exact SDK symbols or applying ordinary C prototypes to unfamiliar runtime ABIs would overstate the evidence.
 
 ## Scope and method
 
@@ -32,13 +34,13 @@ These seven heads remain in the platform queue. Their current IDA item sizes are
 
 | Head | Observed context | Remaining work |
 |---|---|---|
-| `0x11A000` | L2B DMA request-ID bytes beginning `45 46 00 00` | Recover complete platform declaration and consumers |
-| `0x11A004` | L2B process/handle-related constant | Recover object extent and exact usage |
+| `0x11A000` | L2B interrupt-ID bytes `45 46`; initial DMA-ID classification corrected by BindInterrupt consumers | Resolved as `g_l2bInterruptIds[2]` in the driver pass |
+| `0x11A004` | L2B process pseudo-handle | Resolved as `const Handle g_l2bCurrentProcessPseudoHandle`, value `0xFFFF8001` |
 | `0x11A014` | Shared service/decoder-wrapper references into zero-valued storage | Determine whether this is a sentinel, initializer or several adjacent objects |
-| `0x11A088` | Y2R process/handle-related constant | Recover object extent and exact usage |
-| `0x11A08C` | Y2R coefficient initialization bytes | Compare complete initializer and driver state |
+| `0x11A088` | Y2R process pseudo-handle | Resolved as `const Handle g_y2rCurrentProcessPseudoHandle`, value `0xFFFF8001` |
+| `0x11A08C` | Y2R coefficient initialization bytes | Resolved as the 64-byte standard-coefficient matching table |
 | `0x11A19C` | DWL/platform memory paths; first word `0xFFFF8001` | Distinguish pseudo-handle from adjacent data |
-| `0x11A1A4` | `MvdY2rReadStandardCoefficients` | Recover complete coefficient-array type and row ordering |
+| `0x11A1A4` | `MvdY2rReadStandardCoefficients` | Resolved as four 16-byte standard-coefficient presets |
 
 Two additional interior-reference groups belong to already typed `mcFilter` (`0x11CBB8`) and `vp71FeatureBits` (`0x11D2C8`). They are not new attribution gaps.
 
@@ -46,7 +48,7 @@ Two additional interior-reference groups belong to already typed `mcFilter` (`0x
 
 The codec work still has semantic and representation gaps: the five unresolved register ordinals, capability word `+0x18`, the extra VP6/VP8 info byte, the full lifecycle of storage `mvc` at `+0x39E0`, SPS/PPS stack overlays, and the H.264 picture-state pointer whose shifted type does not persist. Hardware-dependent questions retain their separate status. See [methodology.md](methodology.md) and [codec-readability.md](codec-readability.md).
 
-The deferred function inventory also identifies ABI traps for the final phase. Division-family entries at `0x10E9E8` and `0x10F668` must be reviewed for register-pair quotient/remainder behavior before assigning prototypes. Memory-fill veneers can enter the middle of a shared routine, and the sending-path veneer `0x10B97C` jumps to `0x10BBE4`. These are reasons to preserve uncertainty now, not additional codec algorithms.
+The deferred function inventory also identifies ABI traps for the final phase. Division-family entries at `0x10E9E8` and `0x10F668` must be reviewed for register-pair quotient/remainder behavior before assigning prototypes. Memory-fill veneers can enter the middle of a shared routine, and the sending-path entry `0x10B97C` originally appeared to jump to `0x10BBE4` (the later driver pass corrects it to an ARM SVC `0x53` veneer). These are reasons to preserve uncertainty now, not additional codec algorithms.
 
 ## Database validation
 
