@@ -96,6 +96,6 @@ Twenty-five additional register semantics have been recovered from callers, usin
 
 ## Remaining work
 
-The [codec leaf pass](codec-leaf-analysis.md) extends attribution through entropy decoding and macroblock/RLC preparation. Deeper H.264 DPB output/marking, intra/inter prediction leaves, neighbor helpers and SDK/runtime support still need individual attribution. The H.264 storage extension word and workaround-mask origin remain open. The 421-function inventory is an evidence-based progress record, not a claim that all 797 functions have been identified.
+The [codec leaf pass](codec-leaf-analysis.md) extends attribution through entropy decoding and macroblock/RLC preparation. The [DPB/prediction pass](h264-dpb-prediction.md) covers the main H.264 allocation, marking, output, reference-list and intra-prediction paths and explains the frame-number mask. Remaining unnamed parser/support routines and SDK/runtime code still need attribution. The H.264 storage extension word and exact silicon fault behind the workaround remain open. The 471-function inventory is a progress record, not a claim that all 797 functions have been identified.
 
 The continued platform findings are in [platform-glue.md](platform-glue.md). No decoder was executed and no live MMIO state was changed.

@@ -51,3 +51,7 @@ Known library functions retain upstream API/internal names. Platform adaptations
 Public data types were imported where layouts match. `Mvd*` structures describe observed ABI variants. Unresolved container fields remain reserved instead of importing plausible but incompatible members. Original named service-dispatch functions were preserved; the old generic `ValidateConfig` and `ConvertErrorCode` names were refined.
 
 [The function inventory](function-map.md) records applied names and prototypes. This is an inventory of identified functions, not a claim that every runtime, SDK, or internal decoder routine has been attributed to an exact source function.
+
+## DPB and prediction continuation
+
+The [DPB/prediction pass](h264-dpb-prediction.md) identifies 49 further source counterparts plus one descriptively named bit-patching helper. It preserves the by-value `IsReference` picture ABI, the two-byte neighbor records and unused-argument elimination. Observed branch differences include an extra 32 bytes in reference-picture allocation requests, MMCO 6's capacity comparison with a parent post-check, and the H.264 extension to `InitWorkarounds`. The latter disables the bit-12 patch for G1 builds `>= 0x2390`; the exact hardware defect and source revision remain unidentified.

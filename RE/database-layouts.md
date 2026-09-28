@@ -218,7 +218,7 @@ The continuation layouts below are described in [decoder-internals.md](decoder-i
 | `0x3c18` | `refBufferCtrl` | `MvdRefBuffer` | 228 |
 | `0x3cfc` | `keepHwReserved` | `u32` | 4 |
 | `0x3d00` | `skipNonReference` | `u32` | 4 |
-| `0x3d04` | `workaroundWords` | `u32[4]` | 16 |
+| `0x3d04` | `workarounds` | `MvdDecoderWorkarounds` | 16 |
 | `0x3d14` | `pp` | `MvdH264Pp` | 224 |
 
 ## MvdVp6Container (2424 bytes)
@@ -627,3 +627,18 @@ The following layouts were read back from IDA after source/consumer analysis; th
 | `MvdH264Storage` | `0x3548` | `mbLayer` | `MvdH264MbLayer` | 1124 |
 | `MvdH264Storage` | `0x39dc` | `unresolvedWord3703` | `u32` | 4 |
 | `MvdVp8Decoder` | `0xa30` | `coeffProbsDecoded` | `u32` | 4 |
+
+## DPB/prediction additions
+
+`MvdH264Neighbour` is a two-byte source-assisted record: `u8 mb` at offset 0 and `u8 index` at offset 1. The three 24-entry A/B/D tables at `0x11C8A8`, `0x11C8D8` and `0x11C908` use this type.
+
+`MvdDecoderWorkarounds` is a 16-byte union. Its H.264 view, `MvdH264FrameNumWorkaround`, is:
+
+| Offset | Member | Type | Bytes |
+|---|---|---|---:|
+| `0x0` | `enabled` | `u32` | 4 |
+| `0x4` | `reservedWord1` | `u32` | 4 |
+| `0x8` | `frameNumMask` | `u32` | 4 |
+| `0xc` | `annexBPatchActive` | `u32` | 4 |
+
+The alternative `mpeg` view has `stuffing` and `startCode` at offsets 0/4; `rvMultibuffer` is the first word. The reference union is eight bytes and lacks the H.264 extension. The extra view is based on MVD accesses, not copied from that source. The container remains 15860 bytes with its PP block still at `0x3D14`. See [h264-dpb-prediction.md](h264-dpb-prediction.md) for gates, mutation and return semantics.
