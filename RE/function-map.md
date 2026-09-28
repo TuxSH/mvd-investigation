@@ -1,6 +1,6 @@
 # Applied function names and prototypes
 
-Addresses are IDA virtual addresses. This inventory contains 471 applied functions. `MVDSTD_`, `MVDL2B_`, `MVDY2R_` and `Mvd` names describe recovered service, platform or branch-specific codec behavior. Hantro names identify source counterparts, except the explicitly suffixed `PPChangeOutputBuffer_MVD`. DWL API names identify the abstraction boundary; their implementations use Nintendo memory/interrupt services. SVC names identify verified syscall veneers. `ceilf`/`floorf` are runtime semantic identifications with recovered VFP calling conventions.
+Addresses are IDA virtual addresses. This inventory contains 501 applied functions. `MVDSTD_`, `MVDL2B_`, `MVDY2R_` and `Mvd` names describe recovered service, platform or branch-specific codec behavior. Hantro names identify source counterparts, except the explicitly suffixed `PPChangeOutputBuffer_MVD`. DWL API names identify the abstraction boundary; their implementations use Nintendo memory/interrupt services. SVC names identify verified syscall veneers. `ceilf`/`floorf` are runtime semantic identifications with recovered VFP calling conventions.
 
 The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111E64`) and `Y2RU_HandleCommands` (`0x11328C`) names were preserved, with context prototypes refined. Source-family confidence and ABI differences are documented in [external-code.md](external-code.md).
 
@@ -17,10 +17,14 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x101768` | `MvdBusToClientVirtualForCache` | `u32 __spoils<r0,r1,r2> MvdBusToClientVirtualForCache(u32 address,u32 size)` |
 | `0x101788` | `DWLReadAsicFuseStatus` | `void DWLReadAsicFuseStatus(MvdDwlFuseStatus *fuses)` |
 | `0x1018A4` | `DecRefPicMarking` | `u32 DecRefPicMarking(strmData_t *stream,MvdH264RefMarking *marking,u32 isIdr,u32 refFrameCount)` |
+| `0x101A10` | `DecideParityMode` | `u32 DecideParityMode(MvdRefBuffer *refBuffer,u32 isBframe)` |
+| `0x101A3C` | `DecodeBoxOutMap` | `void DecodeBoxOutMap(u32 *map,u32 sliceGroupChangeDirectionFlag,u32 unitsInSliceGroup0,u32 picWidth,u32 picHeight)` |
 | `0x101B50` | `DecodeCoeffToken` | `u32 DecodeCoeffToken(u32 bits,u32 nC)` |
+| `0x101C20` | `DecodeForegroundLeftOverMap` | `void DecodeForegroundLeftOverMap(u32 *map,u32 numSliceGroups,const u32 *topLeft,const u32 *bottomRight,u32 picWidth,u32 picHeight)` |
 | `0x101C8A` | `DecodeLevelPrefix` | `u32 DecodeLevelPrefix(u32 bits)` |
 | `0x101D2C` | `DecodeMbLfAdjustments` | `u32 DecodeMbLfAdjustments(MvdBoolCoder *bc,MvdVp8Decoder *decoder)` |
 | `0x101DCA` | `DecodeMbPred` | `u32 DecodeMbPred(strmData_t *stream,MvdH264MbPred *prediction,u8 mbType,u32 activeRefs,MvdH264MbStorage *mb)` |
+| `0x101EFA` | `DecodeMvcExtension` | `u32 DecodeMvcExtension(strmData_t *stream,MvdH264Sps *sps)` |
 | `0x102134` | `DecodeResidual` | `u32 DecodeResidual(strmData_t *stream,MvdH264MbLayer *layer,MvdH264MbStorage *mb)` |
 | `0x102258` | `DecodeRunBefore` | `u32 DecodeRunBefore(u32 bits,u32 zerosLeft)` |
 | `0x1022F8` | `DecodeSegmentationData` | `u32 DecodeSegmentationData(MvdBoolCoder *bc,MvdVp8Decoder *decoder)` |
@@ -29,7 +33,10 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x1025C4` | `DecodeVp7FrameHeader` | `u32 DecodeVp7FrameHeader(MvdBoolCoder *bc,MvdVp8Decoder *decoder)` |
 | `0x1028C0` | `DecodeVp8FrameHeader` | `u32 DecodeVp8FrameHeader(const u8 *stream,u32 length,MvdBoolCoder *bc,MvdVp8Decoder *decoder)` |
 | `0x102B44` | `DetermineIntra4x4PredMode` | `u32 DetermineIntra4x4PredMode(const MvdH264MbLayer *layer,u32 available,const MvdH264Neighbour *neighborA,const MvdH264Neighbour *neighborB,u32 blockIndex,const MvdH264MbStorage *mbA,const MvdH264MbStorage *mbB)` |
+| `0x102BA8` | `FallbackScaling` | `void FallbackScaling(u8 (*scalingList)[64],u32 index)` |
+| `0x102C34` | `GetDpbSize` | `u32 GetDpbSize(u32 picSizeInMbs,u32 levelIdc)` |
 | `0x102D08` | `MvdCalculateImageSize` | `u32 MvdCalculateImageSize(u32 width, u32 height, u32 format)` |
+| `0x102D54` | `GetSettings` | `u32 GetSettings(MvdRefBuffer *refBuffer,i32 *offsetX,i32 *offsetY,u32 isBpic,u32 isFieldPic)` |
 | `0x102E84` | `MvdCalculateWorkBufferSize` | `u32 MvdCalculateWorkBufferSize(const MvdWorkSizeParams *params)` |
 | `0x102F2C` | `H264DecDecode` | `H264DecRet H264DecDecode(H264DecInst instance, const H264DecInput *input, H264DecOutput *output)` |
 | `0x103AD4` | `H264DecGetInfo` | `H264DecRet H264DecGetInfo(H264DecInst instance, MvdH264Info *info)` |
@@ -43,6 +50,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x1048D4` | `H264InitRefPicList1F` | `void H264InitRefPicList1F(MvdH264Container *decoder,const u32 *list0,u32 *list1)` |
 | `0x1049B0` | `H264RunAsic` | `u32 H264RunAsic(MvdH264Container *decoder,MvdH264AsicBuffers *buffers)` |
 | `0x105448` | `H264SetupVlcRegs` | `void H264SetupVlcRegs(MvdH264Container *decoder)` |
+| `0x1057DC` | `InitMemAccess` | `void InitMemAccess(MvdRefBuffer *refBuffer,u32 decoderMode,u32 busWidth)` |
 | `0x105824` | `InitWorkarounds` | `void InitWorkarounds(u32 decoderMode,MvdDecoderWorkarounds *workarounds)` |
 | `0x1058F0` | `InsertSorted` | `void InsertSorted(MvdVp6SortNode *nodes,s32 node,s32 *head)` |
 | `0x105936` | `Intra16x16Prediction` | `u32 Intra16x16Prediction(MvdH264MbStorage *mb,MvdH264MbLayer *layer,u32 constrainedIntraPred,MvdH264AsicBuffers *buffers)` |
@@ -55,13 +63,17 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x106088` | `PPCheckAllWidthParams` | `i32 PPCheckAllWidthParams(PPConfig *cfg, u32 blendEna, u32 pixAcc, u32 blendCropSupport)` |
 | `0x10635C` | `PPCheckConfig` | `i32 PPCheckConfig(MvdPpContainer *pp, PPConfig *config, u32 decoderLinked, u32 decoderType)` |
 | `0x106918` | `PPCheckSetupChanges` | `u32 PPCheckSetupChanges(PPConfig *previous, PPConfig *current)` |
+| `0x106A2C` | `PPCheckTiledOutput` | `i32 PPCheckTiledOutput(MvdPpContainer *pp,PPConfig *config)` |
 | `0x106AF0` | `PPDecCombinedModeEnable` | `PPResult PPDecCombinedModeEnable(MvdPpContainer *pp, const void *decoder, u32 decoderType)` |
 | `0x106B98` | `PPDecConfigQueryFromDec` | `void PPDecConfigQueryFromDec(MvdPpContainer *pp, DecPpQuery *query)` |
 | `0x106C98` | `PPDecDisplayIndex` | `void PPDecDisplayIndex(MvdPpContainer *pp, u32 index)` |
 | `0x106CA2` | `PPDecEndCallback` | `void PPDecEndCallback(MvdPpContainer *pp)` |
 | `0x106CF0` | `PPDecSetMultipleOutput` | `PPResult PPDecSetMultipleOutput(MvdPpContainer *pp, const PPOutputBuffers *buffers)` |
+| `0x106D88` | `PPDecSetOutBuffer` | `void PPDecSetOutBuffer(MvdPpContainer *pp,const MvdDecPpInterface *decpp)` |
+| `0x106E3C` | `MvdPpSetDecoderInput` | `void MvdPpSetDecoderInput(MvdPpContainer *pp,const MvdDecPpInterface *decpp)` |
 | `0x106EB0` | `PPDecStartPp` | `void PPDecStartPp(MvdPpContainer *pp, const MvdDecPpInterface *decpp)` |
 | `0x10741C` | `PPChangeOutputBuffer_MVD` | `PPResult PPChangeOutputBuffer_MVD(MvdPpContainer *pp, const PPOutput *current, const PPOutput *replacement)` |
+| `0x1074A0` | `PPDecWaitResult` | `PPResult PPDecWaitResult(MvdPpContainer *pp)` |
 | `0x1074D8` | `PPFlushRegs` | `void PPFlushRegs(MvdPpContainer *pp)` |
 | `0x1074FC` | `PPGetConfig` | `PPResult PPGetConfig(MvdPpContainer *pp, PPConfig *config)` |
 | `0x107520` | `PPGetNextOutput` | `PPResult PPGetNextOutput(MvdPpContainer *pp, PPOutput *output)` |
@@ -89,6 +101,8 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x1090B8` | `RefPicListReordering` | `u32 RefPicListReordering(strmData_t *stream,MvdH264RefReordering *order,u32 activeRefCount,u32 maxPicNum,u32 isMvc)` |
 | `0x109170` | `RefbuMvStatisticsB` | `void RefbuMvStatisticsB(MvdRefBuffer *refbu,u32 *registers)` |
 | `0x1091E0` | `RefbuVpxGetPrevFrameStats` | `u32 RefbuVpxGetPrevFrameStats(MvdRefBuffer *refbu)` |
+| `0x1091FC` | `ScalingList` | `void ScalingList(u8 (*scalingList)[64],strmData_t *stream,u32 index)` |
+| `0x109298` | `UpdateMemModel` | `void UpdateMemModel(MvdRefBuffer *refBuffer)` |
 | `0x109330` | `VP6DecDecode` | `VP6DecRet VP6DecDecode(VP6DecInst instance, const VP6DecInput *input, VP6DecOutput *output)` |
 | `0x1095BC` | `VP6DecGetInfo` | `VP6DecRet VP6DecGetInfo(VP6DecInst instance, MvdVp6Info *info)` |
 | `0x109628` | `VP6DecInit` | `VP6DecRet VP6DecInit(VP6DecInst *instance, u32 freezeConcealment, u32 numFrameBuffers, u32 referenceFrameFormat)` |
@@ -118,6 +132,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x10AE80` | `Mmcop5` | `u32 Mmcop5(MvdH264Dpb *dpb)` |
 | `0x10AED0` | `OutBufFree` | `void OutBufFree(MvdH264Dpb *dpb,u32 outputIndex)` |
 | `0x10AF1A` | `h264bsdNextMbAddress` | `u32 h264bsdNextMbAddress(const u32 *sliceGroupMap,u32 picSizeInMbs,u32 currentMb)` |
+| `0x10AF3C` | `h264bsdRbspTrailingBits` | `u32 h264bsdRbspTrailingBits(strmData_t *stream)` |
 | `0x10AF54` | `h264bsdMoreRbspData` | `u32 h264bsdMoreRbspData(strmData_t *stream)` |
 | `0x10AFB0` | `h264bsdIsStartOfPicture` | `u32 h264bsdIsStartOfPicture(MvdH264Storage *storage)` |
 | `0x10AFC4` | `h264bsdInitRefPicList` | `void h264bsdInitRefPicList(MvdH264Dpb *dpb)` |
@@ -157,6 +172,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x10CB5C` | `VP6HWbitread` | `u32 VP6HWbitread(MvdBoolCoder *bc,s32 bits)` |
 | `0x10CB78` | `VP6HWDecodeBool` | `u32 VP6HWDecodeBool(MvdBoolCoder *bc,s32 probability)` |
 | `0x10CBCC` | `VP6HWDeleteHuffman` | `void VP6HWDeleteHuffman(MvdVp6Pb *pb)` |
+| `0x10CBE0` | `VP6HwdAsicReleaseMem` | `void VP6HwdAsicReleaseMem(MvdVp6Container *decoder)` |
 | `0x10CC06` | `BqueueDiscard` | `void BqueueDiscard(MvdBufferQueue *queue,u32 buffer)` |
 | `0x10CC10` | `BqueueNext` | `u32 BqueueNext(MvdBufferQueue *queue,u32 ref0,u32 ref1,u32 ref2,u32 bPic)` |
 | `0x10CC88` | `vp6PreparePpRun` | `void vp6PreparePpRun(MvdVp6Container *decoder)` |
@@ -175,6 +191,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x10D2C4` | `PPSetStatus` | `void PPSetStatus(MvdPpContainer *pp, u32 status)` |
 | `0x10D2CE` | `PPRefreshRegs` | `void PPRefreshRegs(MvdPpContainer *pp)` |
 | `0x10D2F0` | `PPGetStatus` | `u32 PPGetStatus(MvdPpContainer *pp)` |
+| `0x10D2FA` | `PPContinuousCheck` | `i32 PPContinuousCheck(u32 mask)` |
 | `0x10D328` | `PPIsOutPixFmtBlendOk` | `u32 PPIsOutPixFmtBlendOk(u32 format)` |
 | `0x10D380` | `GetPoc` | `s32 GetPoc(const MvdH264DpbPicture *picture)` |
 | `0x10D3A4` | `SetPoc` | `void SetPoc(MvdH264DpbPicture *picture,const s32 *picOrderCnt,u32 field)` |
@@ -204,6 +221,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x10DCCE` | `h264bsdNextOutputPicture` | `MvdH264DpbOutPicture *h264bsdNextOutputPicture(MvdH264Storage *storage)` |
 | `0x10DD1E` | `DWLDisableHW` | `void DWLDisableHW(const MvdDwlInstance *dwl,u32 byteOffset,u32 value)` |
 | `0x10DD26` | `DWLRelease` | `int DWLRelease(void *dwl)` |
+| `0x10DD30` | `MvdInitDecoderRegisters` | `void MvdInitDecoderRegisters(u32 *registers)` |
 | `0x10DE04` | `DWLInit` | `MvdDwlInstance *DWLInit(const MvdDwlInitParams *params)` |
 | `0x10DE0C` | `DWLReadAsicConfig` | `void DWLReadAsicConfig(MvdDwlHwConfig *config)` |
 | `0x10E03C` | `DWLmemset` | `void *DWLmemset(void *dest, int value, u32 size)` |
@@ -233,6 +251,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x10EBDA` | `ScaleDimension` | `u32 ScaleDimension(u32 original,u32 scale)` |
 | `0x10EC20` | `h264bsdDecodeResidualBlockCavlc` | `u32 h264bsdDecodeResidualBlockCavlc(strmData_t *stream,unsigned short *rlc,s32 nC,u32 maxCoefficients)` |
 | `0x10EEFA` | `DetermineNc` | `u32 DetermineNc(MvdH264MbStorage *mb,u32 blockIndex,const u8 *totalCoeff)` |
+| `0x10EFA0` | `h264bsdDecodeHrdParameters` | `u32 h264bsdDecodeHrdParameters(strmData_t *stream,hrdParameters_t *hrd)` |
 | `0x10F098` | `h264bsdFlushBits` | `u32 h264bsdFlushBits(strmData_t *stream,u32 numBits)` |
 | `0x10F1BA` | `h264bsdShowBits` | `u32 h264bsdShowBits(strmData_t *stream,u32 numBits)` |
 | `0x10F298` | `h264bsdDecodeExpGolombSigned` | `u32 h264bsdDecodeExpGolombSigned(strmData_t *stream, s32 *value)` |
@@ -384,12 +403,15 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x114350` | `MvdAttachClientWorkBuffer` | `int MvdAttachClientWorkBuffer(u32 address, u32 size)` |
 | `0x114904` | `MvdVp8CollectNeighborVectors` | `u32 MvdVp8CollectNeighborVectors(const u32 *currentMb,MvdVp8Mv *vectors,u32 *referenceIds,u32 mbY,u32 mbX,u32 validRows,u32 widthInMbs)` |
 | `0x114B58` | `h264DpbAdjStereoOutput` | `void h264DpbAdjStereoOutput(MvdH264Dpb *dpb,u32 targetCount)` |
-| `0x114B8E` | `h264bsdSarSize` | `void h264bsdSarSize(const MvdH264Storage *storage, u32 *width, u32 *height)` |
+| `0x114B8E` | `h264GetSarInfo` | `void h264GetSarInfo(const MvdH264Storage *storage, u32 *width, u32 *height)` |
+| `0x114C30` | `h264PpMultiFindPic` | `u32 h264PpMultiFindPic(MvdH264Container *decoder,const MvdLinearMem *picture)` |
 | `0x114C58` | `h264PreparePpRun` | `void h264PreparePpRun(MvdH264Container *decoder)` |
 | `0x114E50` | `h264RegisterPP` | `i32 h264RegisterPP(MvdH264Container *decoder, const void *pp, void (*start)(const void *, const MvdDecPpInterface *), void (*end)(const void *), void (*query)(const void *, DecPpQuery *), void (*display)(const void *, u32))` |
 | `0x114EBC` | `h264UnregisterPP` | `i32 h264UnregisterPP(MvdH264Container *decoder, const void *pp)` |
+| `0x114EE6` | `h264UseDisplaySmoothing` | `u32 h264UseDisplaySmoothing(const MvdH264Container *decoder)` |
 | `0x114EF8` | `h264bsdActivateParamSets` | `u32 h264bsdActivateParamSets(MvdH264Storage *storage,u32 ppsId,u32 isIdr)` |
 | `0x115004` | `h264bsdAllocateSwResources` | `u32 h264bsdAllocateSwResources(const void *dwl,MvdH264Storage *storage,u32 highSupported)` |
+| `0x1150C4` | `h264bsdAspectRatioIdc` | `u32 h264bsdAspectRatioIdc(const MvdH264Storage *storage)` |
 | `0x1150E0` | `h264bsdCheckAccessUnitBoundary` | `u32 h264bsdCheckAccessUnitBoundary(strmData_t *stream,MvdH264Nal *nextNal,MvdH264Storage *storage,u32 *boundaryFlag)` |
 | `0x115338` | `h264bsdCheckBottomFieldFlag` | `u32 h264bsdCheckBottomFieldFlag(const strmData_t *stream,u32 maxFrameNum,u8 nalUnitType,u32 fieldPicFlagPresent,u32 *bottomFieldFlag)` |
 | `0x1153B4` | `h264bsdCheckDeltaPicOrderCnt` | `u32 h264bsdCheckDeltaPicOrderCnt(const strmData_t *stream,const MvdH264Sps *sps,u8 nalUnitType,u32 picOrderPresent,s32 *delta)` |
@@ -401,6 +423,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x1157C2` | `h264bsdCheckPicOrderCntLsb` | `u32 h264bsdCheckPicOrderCntLsb(const strmData_t *stream,const MvdH264Sps *sps,u8 nalUnitType,u32 *pocLsb)` |
 | `0x11586C` | `h264bsdCheckPpsId` | `u32 h264bsdCheckPpsId(const strmData_t *stream,u32 *ppsId)` |
 | `0x1158B2` | `h264bsdCheckPriorPicsFlag` | `u32 h264bsdCheckPriorPicsFlag(u32 *noOutputOfPriorPicsFlag,const strmData_t *stream,const MvdH264Sps *sps,const MvdH264Pps *pps)` |
+| `0x1159C2` | `h264bsdCheckValidParamSets` | `u32 h264bsdCheckValidParamSets(MvdH264Storage *storage)` |
 | `0x1159D4` | `h264bsdCompareSeqParamSets` | `u32 h264bsdCompareSeqParamSets(const MvdH264Sps *newSps,MvdH264Sps *storedSps)` |
 | `0x115AF6` | `h264bsdComputeSliceGroupMap` | `void h264bsdComputeSliceGroupMap(MvdH264Storage *storage,u32 changeCycle)` |
 | `0x115B14` | `h264bsdConceal` | `void h264bsdConceal(MvdH264Storage *storage,MvdH264AsicBuffers *asic,u32 sliceType)` |
@@ -411,17 +434,21 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x1166C0` | `h264bsdDecodeMacroblock` | `u32 h264bsdDecodeMacroblock(MvdH264Storage *storage,u32 mbIndex,s32 *qpY,MvdH264AsicBuffers *asic)` |
 | `0x11686C` | `h264bsdDecodeMacroblockLayerCavlc` | `u32 h264bsdDecodeMacroblockLayerCavlc(strmData_t *stream,MvdH264MbLayer *layer,MvdH264MbStorage *mb,const MvdH264SliceHeader *slice)` |
 | `0x116994` | `h264bsdDecodeNalUnit` | `u32 h264bsdDecodeNalUnit(strmData_t *stream,MvdH264Nal *nal)` |
+| `0x116A5E` | `h264bsdDecodePicOrderCnt` | `void h264bsdDecodePicOrderCnt(MvdH264Poc *poc,const MvdH264Sps *sps,const MvdH264SliceHeader *sliceHeader,const MvdH264Nal *nalUnit)` |
 | `0x116C68` | `h264bsdDecodePicParamSet` | `u32 h264bsdDecodePicParamSet(strmData_t *stream,MvdH264Pps *pps)` |
 | `0x116F78` | `h264bsdDecodeSeqParamSet` | `u32 h264bsdDecodeSeqParamSet(strmData_t *stream, MvdH264Sps *sps, u32 mvcFlag)` |
 | `0x117338` | `h264bsdDecodeSliceData` | `u32 h264bsdDecodeSliceData(MvdH264Container *decoder,strmData_t *stream,MvdH264SliceHeader *slice)` |
 | `0x1174B0` | `h264bsdDecodeSliceGroupMap` | `void h264bsdDecodeSliceGroupMap(u32 *map,MvdH264Pps *pps,u32 changeCycle,u32 widthInMbs,u32 heightInMbs)` |
 | `0x117610` | `h264bsdDecodeSliceHeader` | `u32 h264bsdDecodeSliceHeader(strmData_t *stream,MvdH264SliceHeader *slice,MvdH264Sps *sps,MvdH264Pps *pps,MvdH264Nal *nal)` |
+| `0x117A94` | `h264bsdDecodeVuiParameters` | `u32 h264bsdDecodeVuiParameters(strmData_t *stream,vuiParameters_t *vui)` |
 | `0x117DC4` | `h264bsdDpbOutputPicture` | `MvdH264DpbOutPicture *h264bsdDpbOutputPicture(MvdH264Dpb *dpb)` |
 | `0x117E0E` | `h264bsdExtractNalUnit` | `u32 h264bsdExtractNalUnit(u8 *byteStream,u32 length,strmData_t *stream,u32 *readBytes,u32 rlcMode)` |
 | `0x117F4E` | `MvdH264PatchFrameNumBit12` | `u32 MvdH264PatchFrameNumBit12(u8 *stream,u32 length,u32 frameNum,u32 maxFrameNum,u32 *initialStartCodeBytes)` |
 | `0x118030` | `h264bsdFlushBuffer` | `void h264bsdFlushBuffer(MvdH264Storage *storage)` |
 | `0x11804C` | `h264bsdInit` | `void h264bsdInit(MvdH264Storage *storage, u32 noReordering, u32 displaySmoothing)` |
 | `0x118084` | `h264bsdInitDpb` | `u32 h264bsdInitDpb(const MvdDwlInstance *dwl,MvdH264Dpb *dpb,u32 picSizeInMbs,u32 dpbSize,u32 maxRefFrames,u32 maxFrameNum,u32 noReordering,u32 displaySmoothing,u32 monochrome,u32 highSupported,u32 enableSecondChroma,u32 multiBufferPp)` |
+| `0x118204` | `h264bsdInitMbNeighbours` | `void h264bsdInitMbNeighbours(MvdH264MbStorage *macroblocks,u32 picWidth,u32 picSize)` |
+| `0x1182A8` | `h264bsdInitStorage` | `void h264bsdInitStorage(MvdH264Storage *storage)` |
 | `0x1182E0` | `h264bsdIsByteAligned` | `u32 h264bsdIsByteAligned(const strmData_t *stream)` |
 | `0x1182EE` | `h264bsdIsEndOfPicture` | `u32 h264bsdIsEndOfPicture(MvdH264Storage *storage)` |
 | `0x11833E` | `h264bsdIsMonoChrome` | `u32 h264bsdIsMonoChrome(MvdH264Storage *storage)` |
@@ -435,9 +462,11 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x11885C` | `h264bsdPredModeIntra16x16` | `u32 h264bsdPredModeIntra16x16(u8 mbType)` |
 | `0x118864` | `h264bsdReorderRefPicList` | `u32 h264bsdReorderRefPicList(MvdH264Dpb *dpb,MvdH264RefReordering *order,u32 currentFrameNum,u32 activeRefCount)` |
 | `0x11894C` | `h264bsdResetDpb` | `u32 h264bsdResetDpb(const MvdDwlInstance *dwl,MvdH264Dpb *dpb,u32 picSizeInMbs,u32 dpbSize,u32 maxRefFrames,u32 maxFrameNum,u32 noReordering,u32 displaySmoothing,u32 monochrome,u32 highSupported,u32 enableSecondChroma,u32 multiBufferPp)` |
+| `0x1189C0` | `h264bsdSarSize` | `void h264bsdSarSize(const MvdH264Storage *storage,u32 *sarWidth,u32 *sarHeight)` |
 | `0x1189EE` | `h264bsdShutdown` | `void h264bsdShutdown(MvdH264Storage *storage)` |
 | `0x118AB4` | `h264bsdStorePicParamSet` | `u32 h264bsdStorePicParamSet(MvdH264Storage *storage,MvdH264Pps *pps)` |
 | `0x118B50` | `h264bsdStoreSeqParamSet` | `u32 h264bsdStoreSeqParamSet(MvdH264Storage *storage,MvdH264Sps *sps)` |
+| `0x118C3C` | `h264bsdValidParamSets` | `u32 h264bsdValidParamSets(MvdH264Storage *storage)` |
 | `0x118C6C` | `h264bsdVideoRange` | `u32 h264bsdVideoRange(const MvdH264Storage *storage)` |
 | `0x118C8E` | `MvdDwlDisableHardware` | `void MvdDwlDisableHardware(const MvdDwlInstance *dwl,u32 byteOffset,u32 value)` |
 | `0x118C96` | `MvdDwlEnableHardware` | `void MvdDwlEnableHardware(const MvdDwlInstance *dwl,u32 byteOffset,u32 value)` |
@@ -467,6 +496,7 @@ The existing `MVDSTD_HandleCommands` (`0x1124E8`), `L2BU_HandleCommands` (`0x111
 | `0x119530` | `vp8hwdPrepareVp7Scan` | `void vp8hwdPrepareVp7Scan(MvdVp8Decoder *decoder,const u32 *newOrder)` |
 | `0x119568` | `MvdVp8ReleaseConcealment` | `void MvdVp8ReleaseConcealment(MvdVp8EcState *state)` |
 | `0x119578` | `vp8hwdResetDecoder` | `void vp8hwdResetDecoder(MvdVp8Decoder *decoder,MvdVp8AsicBuffers *buffers)` |
+| `0x1195C0` | `vp8hwdResetProbs` | `void vp8hwdResetProbs(MvdVp8Decoder *decoder)` |
 | `0x1196B0` | `vp8hwdSetPartitionOffsets` | `u32 vp8hwdSetPartitionOffsets(const u8 *stream,u32 length,MvdVp8Decoder *decoder)` |
 | `0x119742` | `vp8hwdUpdateOutBase` | `void vp8hwdUpdateOutBase(MvdVp8Container *decoder)` |
 | `0x1197F0` | `MvdIpcWriteVp6Picture` | `void MvdIpcWriteVp6Picture(u32 **commandBuffer, u32 wordIndex, const MvdVp6Picture *picture)` |

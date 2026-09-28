@@ -642,3 +642,61 @@ The following layouts were read back from IDA after source/consumer analysis; th
 | `0xc` | `annexBPatchActive` | `u32` | 4 |
 
 The alternative `mpeg` view has `stuffing` and `startCode` at offsets 0/4; `rvMultibuffer` is the first word. The reference union is eight bytes and lacks the H.264 extension. The extra view is based on MVD accesses, not copied from that source. The container remains 15860 bytes with its PP block still at `0x3D14`. See [h264-dpb-prediction.md](h264-dpb-prediction.md) for gates, mutation and return semantics.
+
+## VUI and HRD parser layouts
+
+Recovered in the [parser/support pass](parser-support.md). `MvdH264Sps.vuiParameters` at `+0x58` now has type `vuiParameters_t *`; the parent SPS remains 708 bytes.
+
+### hrdParameters_t (412 bytes)
+
+| Offset | Member | Type | Size |
+|---|---|---|---:|
+| `0x0` | `cpbCnt` | `u32` | 4 |
+| `0x4` | `bitRateScale` | `u32` | 4 |
+| `0x8` | `cpbSizeScale` | `u32` | 4 |
+| `0xc` | `bitRateValue` | `u32[32]` | 128 |
+| `0x8c` | `cpbSizeValue` | `u32[32]` | 128 |
+| `0x10c` | `cbrFlag` | `u32[32]` | 128 |
+| `0x18c` | `initialCpbRemovalDelayLength` | `u32` | 4 |
+| `0x190` | `cpbRemovalDelayLength` | `u32` | 4 |
+| `0x194` | `dpbOutputDelayLength` | `u32` | 4 |
+| `0x198` | `timeOffsetLength` | `u32` | 4 |
+
+### vuiParameters_t (952 bytes)
+
+| Offset | Member | Type | Size |
+|---|---|---|---:|
+| `0x0` | `aspectRatioPresentFlag` | `u32` | 4 |
+| `0x4` | `aspectRatioIdc` | `u32` | 4 |
+| `0x8` | `sarWidth` | `u32` | 4 |
+| `0xc` | `sarHeight` | `u32` | 4 |
+| `0x10` | `overscanInfoPresentFlag` | `u32` | 4 |
+| `0x14` | `overscanAppropriateFlag` | `u32` | 4 |
+| `0x18` | `videoSignalTypePresentFlag` | `u32` | 4 |
+| `0x1c` | `videoFormat` | `u32` | 4 |
+| `0x20` | `videoFullRangeFlag` | `u32` | 4 |
+| `0x24` | `colourDescriptionPresentFlag` | `u32` | 4 |
+| `0x28` | `colourPrimaries` | `u32` | 4 |
+| `0x2c` | `transferCharacteristics` | `u32` | 4 |
+| `0x30` | `matrixCoefficients` | `u32` | 4 |
+| `0x34` | `chromaLocInfoPresentFlag` | `u32` | 4 |
+| `0x38` | `chromaSampleLocTypeTopField` | `u32` | 4 |
+| `0x3c` | `chromaSampleLocTypeBottomField` | `u32` | 4 |
+| `0x40` | `timingInfoPresentFlag` | `u32` | 4 |
+| `0x44` | `numUnitsInTick` | `u32` | 4 |
+| `0x48` | `timeScale` | `u32` | 4 |
+| `0x4c` | `fixedFrameRateFlag` | `u32` | 4 |
+| `0x50` | `nalHrdParametersPresentFlag` | `u32` | 4 |
+| `0x54` | `nalHrdParameters` | `hrdParameters_t` | 412 |
+| `0x1f0` | `vclHrdParametersPresentFlag` | `u32` | 4 |
+| `0x1f4` | `vclHrdParameters` | `hrdParameters_t` | 412 |
+| `0x390` | `lowDelayHrdFlag` | `u32` | 4 |
+| `0x394` | `picStructPresentFlag` | `u32` | 4 |
+| `0x398` | `bitstreamRestrictionFlag` | `u32` | 4 |
+| `0x39c` | `motionVectorsOverPicBoundariesFlag` | `u32` | 4 |
+| `0x3a0` | `maxBytesPerPicDenom` | `u32` | 4 |
+| `0x3a4` | `maxBitsPerMbDenom` | `u32` | 4 |
+| `0x3a8` | `log2MaxMvLengthHorizontal` | `u32` | 4 |
+| `0x3ac` | `log2MaxMvLengthVertical` | `u32` | 4 |
+| `0x3b0` | `numReorderFrames` | `u32` | 4 |
+| `0x3b4` | `maxDecFrameBuffering` | `u32` | 4 |

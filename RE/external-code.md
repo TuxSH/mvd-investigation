@@ -22,7 +22,7 @@ Several independent fingerprints agree:
 | `0x109628` | `source/vp6/vp6hwd_api.c: VP6DecInit` | Same DWL client 7, reference count clamped to 3..16, concealment and tiled-reference handling |
 | `0x110EA0` | `source/vp8/vp8decapi.c: VP8DecInit` | Same VP7/VP8/WebP selector, DWL client 10, buffer minima 3/4/1 and mode-specific branches |
 | `0x10F324`, `0x10E0FC` | `source/common/regdrv.c: SetDecRegister`, `GetDecRegister` | Identical table-driven word/width/shift insertion and extraction algorithm |
-| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 25 call-site-derived names, retaining six unnamed entries |
+| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 26 call-site-derived names, retaining five unnamed entries |
 
 Together these establish Hantro software ancestry at function and data-layout level. A generic Hantro-compatible register map alone would not establish that ancestry.
 
@@ -55,3 +55,7 @@ Public data types were imported where layouts match. `Mvd*` structures describe 
 ## DPB and prediction continuation
 
 The [DPB/prediction pass](h264-dpb-prediction.md) identifies 49 further source counterparts plus one descriptively named bit-patching helper. It preserves the by-value `IsReference` picture ABI, the two-byte neighbor records and unused-argument elimination. Observed branch differences include an extra 32 bytes in reference-picture allocation requests, MMCO 6's capacity comparison with a parent post-check, and the H.264 extension to `InitWorkarounds`. The latter disables the bit-12 patch for G1 builds `>= 0x2390`; the exact hardware defect and source revision remain unidentified.
+
+## Parser/support attribution
+
+The [parser/support pass](parser-support.md) adds VUI/HRD, POC, scaling and slice-group helpers, PP/refbuffer support and remaining small codec accessors. The 952-byte VUI and 412-byte HRD layouts match the reference; six scaling/scan tables match all 960 bytes. The previously mislabeled `0x114B8E` is corrected to `h264GetSarInfo`; `h264bsdSarSize` is at `0x1189C0`. Two extracted register-setup helpers retain descriptive `Mvd` names because the reference embeds their behavior within larger initializers/callbacks.

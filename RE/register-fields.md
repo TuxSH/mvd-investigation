@@ -1,6 +1,6 @@
 # Register-field inventory
 
-This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 25 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (six entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
+This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 26 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (five entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
 
 | Ordinal | Assigned name | Register word | Bank byte offset | Width | Shift |
 |---:|---|---:|---|---:|---:|
@@ -23,7 +23,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | 16 | `HWIF_DEC_STRENDIAN_E` | 2 | `0x008` | 1 | 21 |
 | 17 | `HWIF_DEC_INSWAP32_E` | 2 | `0x008` | 1 | 20 |
 | 18 | `HWIF_DEC_OUTSWAP32_E` | 2 | `0x008` | 1 | 19 |
-| 19 | — | 2 | `0x008` | 1 | 18 |
+| 19 | `MVD_HWIF_DEC_DATA_DISC_E_ALIAS` | 2 | `0x008` | 1 | 18 |
 | 20 | `HWIF_DEC_DATA_DISC_E` | 2 | `0x008` | 1 | 18 |
 | 21 | `HWIF_TILED_MODE_MSB` | 2 | `0x008` | 1 | 17 |
 | 22 | `HWIF_DEC_OUT_TILED_E` | 2 | `0x008` | 1 | 17 |
@@ -740,6 +740,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | Ordinals | Evidence |
 |---|---|
 | 9 | Word 1 bit 8; source `HWIF_DEC_IRQ`, cleared with aggregate IRQ status in H.264/VP6/VP8 run helpers |
+| 19 | `MvdInitDecoderRegisters`: word 2 bit 18, same triple and initialization-sequence role as source `HWIF_DEC_DATA_DISC_E`; disassembly at `0x10DD96` confirms the ordinal |
 | 47 | `VP8HwdAsicAllocatePictures`: intra-only/WebP instance flag |
 | 111 | `VP8HwdAsicStrmPosUpdate`: high byte of the stream length for intra-only mode |
 | 118 | `h264AllocateResources`: SPS macroblock height shifted right by eight |
@@ -753,15 +754,16 @@ This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were
 | 708, 720–722 | `PPSetFrmBufferWriting`: high bits of down/right/left/up framebuffer crossing respectively |
 | 723 | `PPSetFrmBufferWriting`: framebuffer/display width; 13 bits in MVD versus 12 in source |
 
-The remaining unnamed ordinals are 8, 10, 19, 128, 282 and 598:
+The remaining unnamed ordinals are 8, 10, 128, 282 and 598:
 
 | Ordinal | Limitation |
 |---|---|
 | 8 | Word 1 bit 11; no supported semantic assignment |
 | 10 | Word 1 bit 5; no supported semantic assignment |
-| 19 | Same triple as ordinal 20 (`HWIF_DEC_DATA_DISC_E`), but an alias need not have the same codec-specific meaning |
 | 128 | Word 7 bit 13, in a VC1-related sequence; surrounding field names do not establish this bit's meaning |
 | 282 | Same full-word triple as ordinal 281 (`HWIF_REFER6_BASE`), next to VP8 stride/chroma controls; duplicate address does not justify copying the reference-buffer name |
 | 598 | Word 58 bit 31; the supplied reference dump reports zero at this word, which does not identify the bit |
+
+Ordinal 19 was previously left unnamed because duplicate triples alone were insufficient. The shared initializer now supplies independent source-sequence evidence; see [parser-support.md](parser-support.md).
 
 Field 579 has a supported descriptive name but only a partial encoding map. No live register experiment was used to resolve these fields.
