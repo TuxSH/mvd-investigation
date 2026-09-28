@@ -134,7 +134,7 @@ The frame-ID cycle `0..17` in the original high-level H.264 helper remains. This
 ### Record validity and remaining service defects
 
 - Info records are copied only for `MVD_STATUS_OK`. Picture records are copied only for `MVD_STATUS_PICTURE_READY`. Other results leave those outputs zeroed, even if the service copied its stack scratch into the reply
-- Fixed-width address members of decoder picture records are module VAs/bus addresses, not ordinary client pointers. With PP multibuffering, use `MVDSTD_GetNextOutput` for saved client VAs
+- In the normal work-buffer allocation path, decoder picture VA members identify client memory within the supplied LINEAR work buffer; paired bus addresses identify the same storage to hardware. These remain explicit `u32` wire fields. Observe picture validity, layout/stride, hardware completion, cache coherence and decoder buffer reuse when accessing pixels. With PP multibuffering, `MVDSTD_GetNextOutput` retrieves the separately registered PP output client VAs
 - H.264 decode progress is copied only for the recognized `0x17000..0x17007` events. Its `end_vaddr` points into module scratch freed before the reply; use `remaining_size` to advance the original input instead
 - VP6/VP8's additional decode output word is named `unused` in the G1 source and is intentionally not exposed as meaningful progress
 - VP6/VP8 info `constant_zero` has established zero-only behavior but an unknown original meaning; it is not assigned a guessed codec feature name

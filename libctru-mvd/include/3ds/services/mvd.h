@@ -811,6 +811,11 @@ typedef struct
 
 /**
  * @brief H.264 decoded-picture metadata, exactly 0x40 bytes
+ *
+ * Normal decoder allocations reside in the client-provided LINEAR work buffer
+ * Returned VAs identify client memory; bus addresses identify the same storage to hardware
+ * Interpret addresses only for a valid picture, with the reported layout and any plane strides
+ * Synchronize CPU access with hardware completion and cache maintenance; decoder buffers may be reused
  */
 typedef struct
 {
@@ -820,7 +825,7 @@ typedef struct
 	u32 crop_width;            ///< @brief Visible cropped width in pixels
 	u32 crop_top;              ///< @brief Top edge of the visible crop in pixels
 	u32 crop_height;           ///< @brief Visible cropped height in pixels
-	u32 output_vaddr;          ///< @brief Module VA of decoded picture storage; not a client-dereferenceable pointer
+	u32 output_vaddr;          ///< @brief Client VA of decoded picture storage in the supplied work buffer
 	u32 output_bus_address;    ///< @brief Hardware bus address of decoded picture storage
 	u32 picture_id;            ///< @brief Picture identifier reported by the decoder
 	u32 is_idr;                ///< @brief Nonzero for an instantaneous decoder refresh picture
@@ -869,6 +874,12 @@ typedef struct
 
 /**
  * @brief VP7/VP8/WebP decoded-picture metadata, exactly 0x40 bytes
+ *
+ * Normal decoder allocations reside in the client-provided LINEAR work buffer
+ * Returned VAs identify client memory; bus addresses identify the same storage to hardware
+ * Interpret addresses only for a valid picture, with the reported layout and any plane strides
+ * Synchronize CPU access with hardware completion and cache maintenance; decoder buffers may be reused
+ * Optional WebP user-picture buffers follow a separate path whose accepted modes are not fully established
  */
 typedef struct
 {
@@ -878,9 +889,9 @@ typedef struct
 	u32 frame_height;          ///< @brief Stored frame height in pixels, including decoder alignment
 	u32 luma_stride;           ///< @brief Stored luma row stride in bytes
 	u32 chroma_stride;         ///< @brief Stored chroma row stride in bytes
-	u32 luma_vaddr;            ///< @brief Module VA of the decoded luma plane; not a client pointer
+	u32 luma_vaddr;            ///< @brief Client VA of the decoded luma plane in the normal work-buffer path
 	u32 luma_bus_address;      ///< @brief Hardware bus address of the decoded luma plane
-	u32 chroma_vaddr;          ///< @brief Module VA of the decoded chroma plane; not a client pointer
+	u32 chroma_vaddr;          ///< @brief Client VA of the decoded chroma plane in the normal work-buffer path
 	u32 chroma_bus_address;    ///< @brief Hardware bus address of the decoded chroma plane
 	u32 picture_id;            ///< @brief Picture identifier reported by the decoder
 	u32 intra;                 ///< @brief Native intra-frame flag; some output paths explicitly report zero
@@ -911,12 +922,17 @@ typedef struct
 
 /**
  * @brief VP6 decoded-picture metadata, exactly 0x24 bytes
+ *
+ * Normal decoder allocations reside in the client-provided LINEAR work buffer
+ * Returned VAs identify client memory; bus addresses identify the same storage to hardware
+ * Interpret addresses only for a valid picture, with the reported layout and any plane strides
+ * Synchronize CPU access with hardware completion and cache maintenance; decoder buffers may be reused
  */
 typedef struct
 {
 	u32 frame_width;           ///< @brief Stored frame width in pixels, including decoder alignment
 	u32 frame_height;          ///< @brief Stored frame height in pixels, including decoder alignment
-	u32 output_vaddr;          ///< @brief Module VA of decoded picture storage; not a client-dereferenceable pointer
+	u32 output_vaddr;          ///< @brief Client VA of decoded picture storage in the supplied work buffer
 	u32 output_bus_address;    ///< @brief Hardware bus address of decoded picture storage
 	u32 picture_id;            ///< @brief Picture identifier reported by the decoder
 	u32 intra;                 ///< @brief Native intra-frame flag; some output paths explicitly report zero
