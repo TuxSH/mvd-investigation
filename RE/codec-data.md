@@ -136,7 +136,7 @@ IDA now has a 128-byte `MvdVp8DecodeScratch` union and a correctly sized stack v
 
 The capability writer clears all 100 bytes and does not explicitly populate `MvdDwlHwConfig.unresolvedWord6` at `+0x18`. The apparent VP8 uses above do not identify it. The extra byte in VP6/VP8 info is still written as zero; its location alone is insufficient to call it DPB mode or another familiar source field.
 
-A bounded disassembly-text search for the H.264 storage extension at `+0x39DC` and its current member name produced no additional semantic consumer. This is not proof that it is unused: biased pointers, aliases and bulk clears can obscure direct references. The five register ordinals 8, 10, 128, 282 and 598 also remain unresolved. No new semantic names were invented for these fields.
+A bounded disassembly-text search for the H.264 storage extension at `+0x39DC` and its current member name produced no additional semantic consumer. This is not proof that it is unused: biased pointers, aliases and bulk clears can obscure direct references. The later [MVC state pass](h264-mvc-state.md) resolves that word as `mvcEnabled`, using an API writer and an aliased parser read missed by this search. The five register ordinals 8, 10, 128, 282 and 598 remain unresolved; no semantic names were invented for them.
 
 ## Nonmatches and validation
 

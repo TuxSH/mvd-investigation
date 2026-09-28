@@ -1,4 +1,4 @@
-# H.264 shared epilogue and Thumb BL correction
+# H.264 control-flow corrections
 
 ## Finding
 
@@ -44,3 +44,28 @@ The installed IDA batch interface was used for the function-tail and processor-s
 The epilogue and branch bytes were checked unchanged. Fresh pseudocode after reopening shows direct `return 3` statements on both error paths, without the false epilogue call or `JUMPOUT`. The database now contains 796 functions and 265 `sub_*` names, down from 797/266 because one entry was not a function. The 501-entry documented function inventory is unchanged; this correction is not counted as a newly attributed function.
 
 Other interior-pointer and stack-lifetime artifacts remain in the large decoder decompilation. This correction does not assert that all such artifacts are resolved. The [codec-data continuation](codec-data.md) records the separate VP8 reused-pointer finding. Hardware behavior, runtime concealment-defect reachability and platform attribution remain deferred.
+
+## API decode loop and switch default
+
+A subsequent audit found another Thumb `BL` used as a long jump, this time entirely inside `H264DecDecode` (`0x102F2C`):
+
+```asm
+00103A3E  LDR  R0, [SP, ...length]
+00103A40  CMP  R0, #0
+00103A42  BEQ  loc_103A48
+00103A44  BL   loc_10309E
+```
+
+`0x10309E` is the loop head: it clears `readBytes`, checks decoder state, calls `h264bsdDecode` when appropriate, and updates stream position and remaining length. It has no independent function prologue. The displacement from the Thumb PC base is -2474 bytes, beyond the short unconditional branch range. The source counterpart in `h264decapi.c` has a `do { ... } while(strmLen)` covering exactly this work. If length reaches zero, execution instead proceeds at `0x103A48` to populate the API output.
+
+Marking `0x103A44` with `force_bl_jump` removes the false `loc_10309E` function call. Fresh pseudocode now tests `length`, exits for zero and continues the enclosing loop otherwise. The instruction bytes were checked unchanged; no function boundary or count changes were needed.
+
+That refreshed output exposed a second issue in the same function: the default switch target at `0x1032D0` was a two-byte data item, producing `JUMPOUT(0x1032D0)`. Its bytes `E2 E3` encode Thumb `B 0x103A98`. This sits beside the other case-branch stubs and is the target for cases 0, 3, 9 and default in the existing switch metadata. The two bytes were reclassified as an instruction, without patching them.
+
+The restored default path subtracts `readBytes` from `hwLength`, updates the stream bus/CPU pointers, then reaches the same remaining-length test. Source cases `H264BSD_RDY` and `H264BSD_ERROR` use this common stream-accounting path; the skipped-picture case sets its return value before joining it. Fresh pseudocode shows this accounting in the default branch, with no `JUMPOUT` there. An internal `H264BSD_ERROR` is therefore not itself an immediate API error return at this switch; the surrounding decode loop and final result handling matter.
+
+### Audit scope
+
+The audit visited the 796 current function entries and examined call-instruction code references back into the same function. There were 24 unique instruction sites: 20 switch-helper sites with intra-function case references, two recursive `ProcessTreeNode` calls, one recursive call in deferred `sub_100D76`, and the misclassified loop branch above. The genuine calls were left unchanged. A separate check found no remaining `sub_*` entry with an existing incoming jump/fallthrough reference. These bounded metadata checks do not prove that every function boundary, unclassified byte or control-flow edge is correct.
+
+Current totals remain 796 functions, 265 `sub_*` names and 501 documented names/prototypes. The simultaneous [MVC state pass](h264-mvc-state.md) improves two interior-pointer types and resolves storage `+0x39DC`; other stack-lifetime artifacts remain.

@@ -36,7 +36,7 @@ aub.maskedPrevFrameNum = aub.prevFrameNum & ~decoder->workarounds.h264.frameNumM
 
 `h264bsdCheckAccessUnitBoundary` compares the new frame number with both stored values. The frame-number difference contributes to a boundary only when it matches neither. Other checks still include field flags, reference/non-reference status, picture-order values, IDR status/ID and the relevant view state. The extra member is named `maskedPrevFrameNum`. The later [DPB/prediction pass](h264-dpb-prediction.md) traced it to an in-place bit-12 patch and the G1 build gate; the exact silicon fault remains unknown.
 
-NAL headers, access-unit state, macroblock payload and slice commands are typed throughout `MvdH264Storage`. The 14864-byte storage and 15860-byte container sizes remain unchanged. The storage word at offset `0x39DC` (`unresolvedWord3703`) remains unidentified.
+NAL headers, access-unit state, macroblock payload and slice commands are typed throughout `MvdH264Storage`. The 14864-byte storage and 15860-byte container sizes remain unchanged. The later [MVC state pass](h264-mvc-state.md) identifies the word at offset `0x39DC` as `mvcEnabled`, with no change to the neighboring field offsets.
 
 ### Prototype and behavioral cautions
 
@@ -98,7 +98,7 @@ Source attribution now covers mode probabilities, motion-vector entropy updates,
 
 ## Remaining codec work
 
-The later [DPB/prediction pass](h264-dpb-prediction.md) maps the main DPB marking/output routines, reference lists, intra-prediction leaves and neighbor helpers, and explains the workaround-mask mechanism and build gate. The extra H.264 storage word remains unresolved, and remaining unnamed parser/support routines still need an inventory sweep. Five register ordinals remain unnamed, with alias constraints in [register-fields.md](register-fields.md). The current 501-entry inventory is a progress record within a 797-function database, not a claim that every other function is unnamed or that all codec behavior is understood.
+The later [DPB/prediction pass](h264-dpb-prediction.md) maps the main DPB marking/output routines, reference lists, intra-prediction leaves and neighbor helpers, and explains the workaround-mask mechanism and build gate. The later [MVC state pass](h264-mvc-state.md) resolves the extra H.264 storage word; remaining unnamed routines still need classification. Five register ordinals remain unnamed, with alias constraints in [register-fields.md](register-fields.md). The current 501-entry inventory is a progress record within the current 796-function database, not a claim that every other function is unnamed or that all codec behavior is understood.
 
 Service/hardware uncertainties, including L2B format behavior and runtime High10 support, and the remaining platform/SDK work are still last in the requested ordering. No executable code, reference source or MMIO contents were modified.
 

@@ -625,7 +625,7 @@ The following layouts were read back from IDA after source/consumer analysis; th
 | `MvdH264Storage` | `0x4cc` | `mb` | `MvdH264MbStorage *` | 4 |
 | `MvdH264Storage` | `0x1f50` | `aub` | `MvdH264Aub` | 76 |
 | `MvdH264Storage` | `0x3548` | `mbLayer` | `MvdH264MbLayer` | 1124 |
-| `MvdH264Storage` | `0x39dc` | `unresolvedWord3703` | `u32` | 4 |
+| `MvdH264Storage` | `0x39dc` | `mvcEnabled` | `u32` | 4 |
 | `MvdVp8Decoder` | `0xa30` | `coeffProbsDecoded` | `u32` | 4 |
 
 ## DPB/prediction additions
@@ -727,3 +727,7 @@ Recovered in the [parser/support pass](parser-support.md). `MvdH264Sps.vuiParame
 | `0x20` | `refreshAlternate` | `u32 *` | `&instance->decoder.refreshAlternate` |
 
 These values occupy the slots only during the pointer-storage lifetime. The capability calls overwrite their respective spans. In particular, apparent `unresolvedWord6` pointer uses in the old pseudocode do not establish a meaning for the capability member at `+0x18`.
+
+## H.264 MVC flag refinement
+
+`MvdH264Storage+0x39DC` is now `u32 mvcEnabled`, replacing `unresolvedWord3703`. The existing `mvc` at `+0x39E0` and `view` at `+0x39E4` retain their offsets. The enable API writes the former; prefix-NAL handling copies it into the latter MVC state word. See [h264-mvc-state.md](h264-mvc-state.md) for the full tail map and pointer-alias evidence. Parent sizes remain 14864/15860 bytes.
