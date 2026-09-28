@@ -161,3 +161,7 @@ Required image-plane addresses are nonzero and eight-byte aligned. In combined m
 ## Service-layer caveat
 
 Although PP knows these layouts, the wrapper at `0x112D24` only assigns its cache-maintenance length for output formats `0x010001`, `0x040002`, and `0x041002`. Other accepted PP formats reach that call with an uninitialized size register. This is a static implementation defect, not evidence that every format listed above was tested on hardware. See [memory-and-results.md](memory-and-results.md).
+
+## Internal scaling and capability continuation
+
+The 12 previously opaque scaling words and the final WebP-support word in `MvdPpContainer` are now named; see [database-layouts.md](database-layouts.md). `PPSetupScaling` is at `0x10CFEC`, framebuffer writing/clipping at `0x107D5C`, RGB transform coefficients at `0x108234`, RGB masks at `0x107F3C`/`0x108194`, and dithering at `0x107CB8`. The supplied register reference selects fast-scaling support mode 1 and reports a 1920-pixel PP width limit, with the software height limit of 4096; see [hardware.md](hardware.md) for the conditional feature matrix and chip-revision workaround. Shared decoder-to-PP fields include the additional luma/chroma strides documented in [decoder-internals.md](decoder-internals.md).

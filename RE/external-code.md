@@ -19,10 +19,10 @@ Several independent fingerprints agree:
 | `0x103BE0` | `source/h264high/h264decapi.c: H264DecInit` | Same no-reorder/freeze/smoothing/reference-format arguments, self-pointer validation design, capability gate and reference-filter setup |
 | `0x102F2C` | `H264DecDecode` | Same 20-byte input, 12-byte output, parser/ASIC state machine, status values and stream-position accounting |
 | `0x103AD4` | `H264DecGetInfo` | Same dimensions, range, matrix, crop, SAR, monochrome/interlace and DPB information, with an extra word in this build |
-| `0x109628` | `source/vp6/vp6decapi.c: VP6DecInit` | Same DWL client 7, reference count clamped to 3..16, concealment and tiled-reference handling |
+| `0x109628` | `source/vp6/vp6hwd_api.c: VP6DecInit` | Same DWL client 7, reference count clamped to 3..16, concealment and tiled-reference handling |
 | `0x110EA0` | `source/vp8/vp8decapi.c: VP8DecInit` | Same VP7/VP8/WebP selector, DWL client 10, buffer minima 3/4/1 and mode-specific branches |
 | `0x10F324`, `0x10E0FC` | `source/common/regdrv.c: SetDecRegister`, `GetDecRegister` | Identical table-driven word/width/shift insertion and extraction algorithm |
-| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 named entries applied, with insertions/differences deliberately retained |
+| `0x11A38C` | `source/common/8170table.h` | Ordered register triples align across long runs; 698 ordered source transfers initially; later one IRQ name and 24 call-site-derived names, retaining seven uncertainties |
 
 Together these establish Hantro software ancestry at function and data-layout level. A generic Hantro-compatible register map alone would not establish that ancestry.
 
@@ -36,6 +36,9 @@ Together these establish Hantro software ancestry at function and data-layout le
 * The recovered PP container is `0x57C` bytes. Its frame bookkeeping includes two bottom-field addresses per buffer, and its stored combined result is a signed halfword. Importing the reference container wholesale would mislabel later members.
 * The capability structure is 100 bytes with reordered members and extra fields, versus the reference `DWLHwConfig_t`'s 84 bytes. A separate `MvdDwlHwConfig` preserves the observed ordering and unresolved words.
 * The MVD register table contains 730 meaningful entries including the two aggregate IRQ fields; the local table has 701. Aligned names were transferred by ordered triple matching, not by copying enum ordinals.
+
+* MVD linear memory descriptors are 12 bytes; the Linux `uid` word is absent. H.264 DPB is 1680 bytes, and decoder-to-PP interface is 104 bytes with two extra stride words. Internal container allocations are H.264 15860, VP6 2424 and VP8 4224 bytes.
+* VP8 adds separate chroma buffers, stride controls and hardware-concealment state; the tiled-reference helper adds a DPB-mode argument. See [decoder-internals.md](decoder-internals.md).
 
 These differences indicate a related Hantro branch, not a byte-identical build of the provided source revision. The exact upstream release and Nintendo's patch history are not established.
 

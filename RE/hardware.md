@@ -21,7 +21,7 @@ The PP container holds **41 register words**, representing bank words 60 through
 
 The binary table has 730 entries, versus 701 in the local source including aggregate IRQ entries. Copying the Linux enumeration unchanged would silently assign incorrect names after insertions.
 
-Ordered `(word, width, shift)` sequences were aligned against `source/common/8170table.h`, using matching runs of at least three triples. This yielded 698 transferred names in the database's `MvdHwIf` enum. Unmatched entries were not assigned speculative meanings. Repeated triples are common because fields overlap for different codecs; sequence context is part of the evidence, and equal triples alone do not establish a semantic match. See [register-fields.md](register-fields.md) for the exact transferred mapping and unresolved entries.
+Ordered `(word, width, shift)` sequences were aligned against `source/common/8170table.h`, using matching runs of at least three triples. This yielded 698 transferred names in the database's `MvdHwIf` enum. Subsequent call-site analysis identified 24 additional fields, including PP dimension/mask/clipping extensions, the 13-bit display width, VP8 stride/chroma controls and H.264 field-DPB mode. These use an `MVD_HWIF_` prefix to distinguish recovered semantics from transferred source names. The isolated source `HWIF_DEC_IRQ` entry was also confirmed from IRQ-clear callers, bringing the total to 723 named entries; seven remain unresolved. Repeated triples are common because fields overlap for different codecs; sequence context is part of the evidence, and equal triples alone do not establish a semantic match. See [register-fields.md](register-fields.md) for the exact mapping.
 
 Register names inherited from other codec modes do **not** imply that their corresponding software decoders are compiled or accessible through IPC. The common register map spans more modes than this module exposes.
 
@@ -39,8 +39,50 @@ The product gates recognize legacy `0x8170` and special `0x6731` paths, with oth
 
 `MvdBindDecoderInterrupt` (`0x114264`) creates the decoder event and binds interrupt `0x4F` once, guarded by a global initialized flag. L2B initialization reads interrupt IDs `0x45`/`0x46` from `0x11A000` for its two engines. These bindings are independent of whether the database contains a live register snapshot.
 
+## Supplied GBATEK register dump
+
+The user supplied the following GBATEK excerpt during the continuation. It is reference hardware evidence, **not a register capture from this database or an independently repeated measurement**. No placeholder MMIO bytes were patched with these values.
+
+| Physical address | Bank offset | Value | Interpretation |
+|---|---|---|---|
+| `0x10207000` | `0x000` | `0x67312398` | Product `0x6731`, revision low halfword `0x2398` |
+| `0x102070C8` | `0x0C8` | `0x07B4AF80` | Decoder synthesis word 1 |
+| `0x102070D8` | `0x0D8` | `0xC09A0000` | Decoder synthesis word 2 |
+| `0x102070E4` | `0x0E4` | `0x8516FFFF` | Decoder fuse word |
+| `0x1020718C` | `0x18C` | `0xFFFFFFFF` | PP fuse word |
+| `0x10207190` | `0x190` | `0xFF874780` | PP synthesis word |
+
+The excerpt reports a 512-byte bank mirrored throughout `0x10207200..0x10207FFF`. Its R/W entries with `FFFFFFFF` are not treated as normal initialized decoder state. Physical offsets agree with the bank used at virtual `0x1ED07000` by MVD.
+
+Applying the binary's synthesis extraction, product gates and fuse filtering to those six reference values gives:
+
+| Capability | Synthesis | Fuse / software effect | Effective report |
+|---|---:|---|---:|
+| H.264 | 3 | Enabled | 3 |
+| MPEG-4 | 1 | Fuse disabled | 0 |
+| Sorenson Spark | 1 | Fuse disabled | 0 |
+| VP6 | 1 | Enabled | 1 |
+| VP7 | 0 | Fuse also disabled | 0 |
+| VP8 | 1 | Enabled | 1 |
+| WebP | 1 | Shares VP8 fuse check | 1 |
+| MPEG-2, VC-1, JPEG, AVS, RealVideo, custom MPEG-4 | 0 | No enablement | 0 |
+| MVC | 0 | Also unconditionally cleared by software | 0 |
+| Maximum decoder width | 1920 | Fuse limit 1920 | 1920 pixels |
+| Maximum PP output width | 1920 | Fuse limit 4096 | 1920 pixels |
+| Reference buffer support | 1, plus synthesis/product flags | Fuse enabled | Bitmask 11 |
+| Tiled references | 1 | No further removal | 1 |
+| Hardware error concealment | 0 | — | 0 |
+| Programmable stride | 0 | — | 0 |
+| Field DPB ordering | 0 | — | 0 |
+
+The H.264 capability value 3 is the library's high-profile hardware tier; it does not independently prove High10/10-bit decoding. The JPEG-extension bit is set, but JPEG decoding itself is absent from the effective report. A set extension bit is not sufficient to enable its parent codec.
+
+PP is present. Its synthesis word advertises blending, deinterlacing, dithering, tiled 4×4 output, pixel-accurate output, blend cropping, configurable endian handling and tiled input. Scaling bits 27:26 are 3, selecting fast-scaling support mode 1 in `PPSelectOutputSize`; the PP fuse word does not remove these features. The software sets a separate maximum output height of 4096. These are capability/validation limits, not evidence that every combination is valid or has been executed.
+
+`PPInitHW` enables a horizontal coefficient-rounding workaround only when `DWLReadAsicID() >> 3 == 216408617`, i.e. IDs `0x67311148..0x6731114F`. The supplied `0x67312398` does not meet this test.
+
 ## What the database cannot establish
 
-The mapped hardware segments in this supplied database are zero-filled placeholders, including the ASIC ID, synthesis and fuse words. Their values must not be interpreted as captured hardware state. The code establishes register layout, decoding logic and software restrictions; it does **not** establish which additional features Nintendo physically disabled or the exact decoder/PP width reported by a running console.
+The mapped hardware segments in this supplied database are zero-filled placeholders, including the ASIC ID, synthesis and fuse words. Their values must not be interpreted as captured hardware state. The supplied GBATEK reference permits the conditional feature matrix above, but does not establish that every hardware revision or the particular process used to create this database has identical values.
 
-No actual decoding, interrupt timing, cache-coherency or throughput measurements were performed. A trustworthy live register capture would be needed to turn the capability-reader analysis into a concrete silicon feature matrix.
+The register-write allowlist matches the writable ranges of the supplied dump; see [platform-glue.md](platform-glue.md). No actual decoding, interrupt timing, cache-coherency or throughput measurements were performed. A live capture associated with an identified console revision and firmware would establish whether that target matches the supplied reference.

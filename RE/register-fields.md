@@ -1,6 +1,6 @@
 # Register-field inventory
 
-This is the binary table at `0x11A38C`, in its own ordinal order. Names shown were transferred into `MvdHwIf` by ordered source-table matching. A dash means no source name was assigned. Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
+This is the binary table at `0x11A38C`, in its own ordinal order. 698 names were transferred by ordered source-table matching; `HWIF_DEC_IRQ` was subsequently confirmed from its triple and IRQ-clear callers. The 24 `MVD_HWIF_` names are recovered from call-site semantics rather than claimed upstream spellings. A dash means the field remains unnamed (seven entries). Equal triples can have different codec-specific meanings, so this table preserves aliases and uncertainties. See [hardware.md](hardware.md) for method and limits.
 
 | Ordinal | Assigned name | Register word | Bank byte offset | Width | Shift |
 |---:|---|---:|---|---:|---:|
@@ -13,7 +13,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 6 | `HWIF_DEC_BUS_INT` | 1 | `0x004` | 1 | 13 |
 | 7 | `HWIF_DEC_RDY_INT` | 1 | `0x004` | 1 | 12 |
 | 8 | — | 1 | `0x004` | 1 | 11 |
-| 9 | — | 1 | `0x004` | 1 | 8 |
+| 9 | `HWIF_DEC_IRQ` | 1 | `0x004` | 1 | 8 |
 | 10 | — | 1 | `0x004` | 1 | 5 |
 | 11 | `HWIF_DEC_IRQ_DIS` | 1 | `0x004` | 1 | 4 |
 | 12 | `HWIF_DEC_E` | 1 | `0x004` | 1 | 0 |
@@ -51,7 +51,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 44 | `HWIF_REF_TOPFIELD_E` | 3 | `0x00C` | 1 | 16 |
 | 45 | `HWIF_DEC_OUT_DIS` | 3 | `0x00C` | 1 | 15 |
 | 46 | `HWIF_FILTERING_DIS` | 3 | `0x00C` | 1 | 14 |
-| 47 | — | 3 | `0x00C` | 1 | 13 |
+| 47 | `MVD_HWIF_VP8_INTRA_ONLY` | 3 | `0x00C` | 1 | 13 |
 | 48 | `HWIF_MVC_E` | 3 | `0x00C` | 1 | 13 |
 | 49 | `HWIF_PIC_FIXED_QUANT` | 3 | `0x00C` | 1 | 13 |
 | 50 | `HWIF_WRITE_MVS_E` | 3 | `0x00C` | 1 | 12 |
@@ -115,14 +115,14 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 108 | `HWIF_START_CODE_E` | 6 | `0x018` | 1 | 31 |
 | 109 | `HWIF_INIT_QP` | 6 | `0x018` | 6 | 25 |
 | 110 | `HWIF_CH_8PIX_ILEAV_E` | 6 | `0x018` | 1 | 24 |
-| 111 | — | 6 | `0x018` | 8 | 24 |
+| 111 | `MVD_HWIF_STREAM_LEN_EXT` | 6 | `0x018` | 8 | 24 |
 | 112 | `HWIF_STREAM_LEN` | 6 | `0x018` | 24 | 0 |
 | 113 | `HWIF_CABAC_E` | 7 | `0x01C` | 1 | 31 |
 | 114 | `HWIF_BLACKWHITE_E` | 7 | `0x01C` | 1 | 30 |
 | 115 | `HWIF_DIR_8X8_INFER_E` | 7 | `0x01C` | 1 | 29 |
 | 116 | `HWIF_WEIGHT_PRED_E` | 7 | `0x01C` | 1 | 28 |
 | 117 | `HWIF_WEIGHT_BIPR_IDC` | 7 | `0x01C` | 2 | 26 |
-| 118 | — | 7 | `0x01C` | 1 | 25 |
+| 118 | `MVD_HWIF_H264_PIC_MB_H_EXT` | 7 | `0x01C` | 1 | 25 |
 | 119 | `HWIF_FRAMENUM_LEN` | 7 | `0x01C` | 5 | 16 |
 | 120 | `HWIF_FRAMENUM` | 7 | `0x01C` | 16 | 0 |
 | 121 | `HWIF_BITPLANE0_E` | 7 | `0x01C` | 1 | 31 |
@@ -217,7 +217,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 210 | `HWIF_DCT7_START_BIT` | 11 | `0x02C` | 6 | 0 |
 | 211 | `HWIF_RLC_VLC_BASE` | 12 | `0x030` | 32 | 0 |
 | 212 | `HWIF_DEC_OUT_BASE` | 13 | `0x034` | 32 | 0 |
-| 213 | — | 13 | `0x034` | 1 | 1 |
+| 213 | `MVD_HWIF_DPB_FIELD_MODE` | 13 | `0x034` | 1 | 1 |
 | 214 | `HWIF_REFER0_BASE` | 14 | `0x038` | 32 | 0 |
 | 215 | `HWIF_REFER0_FIELD_E` | 14 | `0x038` | 1 | 1 |
 | 216 | `HWIF_REFER0_TOPC_E` | 14 | `0x038` | 1 | 0 |
@@ -287,8 +287,8 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 280 | `HWIF_AREF_SIGN_BIAS` | 19 | `0x04C` | 1 | 0 |
 | 281 | `HWIF_REFER6_BASE` | 20 | `0x050` | 32 | 0 |
 | 282 | — | 20 | `0x050` | 32 | 0 |
-| 283 | — | 20 | `0x050` | 1 | 1 |
-| 284 | — | 20 | `0x050` | 1 | 0 |
+| 283 | `MVD_HWIF_VP8_STRIDE_E` | 20 | `0x050` | 1 | 1 |
+| 284 | `MVD_HWIF_VP8_SEPARATE_CHROMA_E` | 20 | `0x050` | 1 | 0 |
 | 285 | `HWIF_REFER6_FIELD_E` | 20 | `0x050` | 1 | 1 |
 | 286 | `HWIF_REFER6_TOPC_E` | 20 | `0x050` | 1 | 0 |
 | 287 | `HWIF_TRB_PER_TRD_DM1` | 20 | `0x050` | 27 | 0 |
@@ -305,8 +305,8 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 298 | `HWIF_SCAN_MAP_9` | 20 | `0x050` | 6 | 6 |
 | 299 | `HWIF_SCAN_MAP_10` | 20 | `0x050` | 6 | 0 |
 | 300 | `HWIF_REFER7_BASE` | 21 | `0x054` | 32 | 0 |
-| 301 | — | 21 | `0x054` | 5 | 27 |
-| 302 | — | 21 | `0x054` | 5 | 22 |
+| 301 | `MVD_HWIF_VP8_LUMA_STRIDE_CODE` | 21 | `0x054` | 5 | 27 |
+| 302 | `MVD_HWIF_VP8_CHROMA_STRIDE_CODE` | 21 | `0x054` | 5 | 22 |
 | 303 | `HWIF_REFER7_FIELD_E` | 21 | `0x054` | 1 | 1 |
 | 304 | `HWIF_REFER7_TOPC_E` | 21 | `0x054` | 1 | 0 |
 | 305 | `HWIF_TRB_PER_TRD_D1` | 21 | `0x054` | 27 | 0 |
@@ -582,7 +582,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 575 | `HWIF_QUANT_4` | 47 | `0x0BC` | 11 | 11 |
 | 576 | `HWIF_QUANT_5` | 47 | `0x0BC` | 11 | 0 |
 | 577 | `HWIF_STARTMB_X` | 48 | `0x0C0` | 9 | 23 |
-| 578 | — | 48 | `0x0C0` | 9 | 14 |
+| 578 | `MVD_HWIF_STARTMB_Y` | 48 | `0x0C0` | 9 | 14 |
 | 579 | — | 48 | `0x0C0` | 2 | 12 |
 | 580 | `HWIF_PRED_BC_TAP_0_0` | 49 | `0x0C4` | 10 | 22 |
 | 581 | `HWIF_PRED_BC_TAP_0_1` | 49 | `0x0C4` | 10 | 12 |
@@ -643,11 +643,11 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 636 | `HWIF_COLOR_COEFFA2` | 69 | `0x114` | 10 | 18 |
 | 637 | `HWIF_COLOR_COEFFA1` | 69 | `0x114` | 10 | 8 |
 | 638 | `HWIF_CONTRAST_THR2` | 69 | `0x114` | 8 | 0 |
-| 639 | — | 70 | `0x118` | 2 | 30 |
+| 639 | `MVD_HWIF_PP_OUT_H_EXT` | 70 | `0x118` | 2 | 30 |
 | 640 | `HWIF_COLOR_COEFFD` | 70 | `0x118` | 10 | 20 |
 | 641 | `HWIF_COLOR_COEFFC` | 70 | `0x118` | 10 | 10 |
 | 642 | `HWIF_COLOR_COEFFB` | 70 | `0x118` | 10 | 0 |
-| 643 | — | 71 | `0x11C` | 2 | 30 |
+| 643 | `MVD_HWIF_PP_OUT_W_EXT` | 71 | `0x11C` | 2 | 30 |
 | 644 | `HWIF_CROP_STARTX` | 71 | `0x11C` | 9 | 21 |
 | 645 | `HWIF_ROTATION_MODE` | 71 | `0x11C` | 3 | 18 |
 | 646 | `HWIF_COLOR_COEFFF` | 71 | `0x11C` | 8 | 10 |
@@ -689,10 +689,10 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 682 | `HWIF_MASK1_ABLEND_E` | 86 | `0x158` | 1 | 22 |
 | 683 | `HWIF_MASK1_STARTY` | 86 | `0x158` | 11 | 11 |
 | 684 | `HWIF_MASK1_STARTX` | 86 | `0x158` | 11 | 0 |
-| 685 | — | 87 | `0x15C` | 2 | 29 |
-| 686 | — | 87 | `0x15C` | 2 | 27 |
-| 687 | — | 87 | `0x15C` | 2 | 25 |
-| 688 | — | 87 | `0x15C` | 2 | 23 |
+| 685 | `MVD_HWIF_MASK1_STARTX_EXT` | 87 | `0x15C` | 2 | 29 |
+| 686 | `MVD_HWIF_MASK1_STARTY_EXT` | 87 | `0x15C` | 2 | 27 |
+| 687 | `MVD_HWIF_MASK2_STARTX_EXT` | 87 | `0x15C` | 2 | 25 |
+| 688 | `MVD_HWIF_MASK2_STARTY_EXT` | 87 | `0x15C` | 2 | 23 |
 | 689 | `HWIF_MASK2_ABLEND_E` | 87 | `0x15C` | 1 | 22 |
 | 690 | `HWIF_MASK2_STARTY` | 87 | `0x15C` | 11 | 11 |
 | 691 | `HWIF_MASK2_STARTX` | 87 | `0x15C` | 11 | 0 |
@@ -700,10 +700,10 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 693 | `HWIF_MASK1_E` | 88 | `0x160` | 1 | 22 |
 | 694 | `HWIF_MASK1_ENDY` | 88 | `0x160` | 11 | 11 |
 | 695 | `HWIF_MASK1_ENDX` | 88 | `0x160` | 11 | 0 |
-| 696 | — | 89 | `0x164` | 2 | 29 |
-| 697 | — | 89 | `0x164` | 2 | 27 |
-| 698 | — | 89 | `0x164` | 2 | 25 |
-| 699 | — | 89 | `0x164` | 2 | 23 |
+| 696 | `MVD_HWIF_MASK1_ENDX_EXT` | 89 | `0x164` | 2 | 29 |
+| 697 | `MVD_HWIF_MASK1_ENDY_EXT` | 89 | `0x164` | 2 | 27 |
+| 698 | `MVD_HWIF_MASK2_ENDX_EXT` | 89 | `0x164` | 2 | 25 |
+| 699 | `MVD_HWIF_MASK2_ENDY_EXT` | 89 | `0x164` | 2 | 23 |
 | 700 | `HWIF_MASK2_E` | 89 | `0x164` | 1 | 22 |
 | 701 | `HWIF_MASK2_ENDY` | 89 | `0x164` | 11 | 11 |
 | 702 | `HWIF_MASK2_ENDX` | 89 | `0x164` | 11 | 0 |
@@ -712,7 +712,7 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 705 | `HWIF_UP_CROSS_E` | 90 | `0x168` | 1 | 27 |
 | 706 | `HWIF_DOWN_CROSS_E` | 90 | `0x168` | 1 | 26 |
 | 707 | `HWIF_UP_CROSS` | 90 | `0x168` | 11 | 15 |
-| 708 | — | 90 | `0x168` | 2 | 11 |
+| 708 | `MVD_HWIF_DOWN_CROSS_EXT` | 90 | `0x168` | 2 | 11 |
 | 709 | `HWIF_DOWN_CROSS` | 90 | `0x168` | 11 | 0 |
 | 710 | `HWIF_DITHER_SELECT_R` | 91 | `0x16C` | 2 | 30 |
 | 711 | `HWIF_DITHER_SELECT_G` | 91 | `0x16C` | 2 | 28 |
@@ -724,13 +724,32 @@ This is the binary table at `0x11A38C`, in its own ordinal order. Names shown we
 | 717 | `HWIF_PP_IN_W_EXT` | 92 | `0x170` | 3 | 26 |
 | 718 | `HWIF_CROP_STARTY_EXT` | 92 | `0x170` | 3 | 23 |
 | 719 | `HWIF_CROP_STARTX_EXT` | 92 | `0x170` | 3 | 20 |
-| 720 | — | 92 | `0x170` | 2 | 18 |
-| 721 | — | 92 | `0x170` | 2 | 16 |
-| 722 | — | 92 | `0x170` | 2 | 14 |
-| 723 | — | 92 | `0x170` | 13 | 0 |
+| 720 | `MVD_HWIF_RIGHT_CROSS_EXT` | 92 | `0x170` | 2 | 18 |
+| 721 | `MVD_HWIF_LEFT_CROSS_EXT` | 92 | `0x170` | 2 | 16 |
+| 722 | `MVD_HWIF_UP_CROSS_EXT` | 92 | `0x170` | 2 | 14 |
+| 723 | `MVD_HWIF_DISPLAY_WIDTH` | 92 | `0x170` | 13 | 0 |
 | 724 | `HWIF_ABLEND1_BASE` | 93 | `0x174` | 32 | 0 |
 | 725 | `HWIF_ABLEND2_BASE` | 94 | `0x178` | 32 | 0 |
 | 726 | `HWIF_ABLEND2_SCANL` | 95 | `0x17C` | 13 | 13 |
 | 727 | `HWIF_ABLEND1_SCANL` | 95 | `0x17C` | 13 | 0 |
 | 728 | `HWIF_DEC_IRQ_STAT` | 1 | `0x004` | 7 | 12 |
 | 729 | `HWIF_PP_IRQ_STAT` | 60 | `0x0F0` | 2 | 12 |
+
+## Evidence for continuation names
+
+| Ordinals | Evidence |
+|---|---|
+| 9 | Word 1 bit 8; source `HWIF_DEC_IRQ`, cleared with aggregate IRQ status in H.264/VP6/VP8 run helpers |
+| 47 | `VP8HwdAsicAllocatePictures`: intra-only/WebP instance flag |
+| 111 | `VP8HwdAsicStrmPosUpdate`: high byte of the stream length for intra-only mode |
+| 118 | `h264AllocateResources`: SPS macroblock height shifted right by eight |
+| 213 | `H264RunAsic`: field-DPB mode |
+| 283, 284 | `VP8HwdAsicInitPicture`: stride enable and separate-chroma enable respectively |
+| 301, 302 | `VP8HwdAsicAllocatePictures`: encoded luma/chroma stride values |
+| 578 | `VP8HwdAsicInitPicture` and decode-error path: vertical start macroblock, paired with `HWIF_STARTMB_X` |
+| 639, 643 | `PPSetupHW`: output height/width shifted right by eleven |
+| 685–688, 696–699 | `PPSetupHW`: mask start/end X/Y coordinates shifted right by eleven |
+| 708, 720–722 | `PPSetFrmBufferWriting`: high bits of down/right/left/up framebuffer crossing respectively |
+| 723 | `PPSetFrmBufferWriting`: framebuffer/display width; 13 bits in MVD versus 12 in source |
+
+The remaining ordinals are 8, 10, 19, 128, 282, 579 and 598. Field 579 is involved in VP8 error-concealment start control; its full encoding remains unresolved.

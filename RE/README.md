@@ -9,7 +9,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 * The service's 284-byte configuration is Hantro `PPConfig`. Its previously unknown areas contain RGB controls, masks, range mapping, rotation and deinterlacing settings.
 * `0x00020001` in this configuration means **YCbCr 4:2:0 semiplanar**, not an H.264 codec selector. The initialization command selects the decoder; configuration selects its postprocessing pixel layout.
 * Positive decoder results retain Hantro meanings. `0x17002` from next-picture means **picture ready**, while `0x17004` means **headers ready**. These need context and should not simply be called busy or incomplete processing.
-* This build explicitly clears advertised MVC support and compiles postprocessor connections only for H.264, VP6 and VP8/WebP. Hardware-register placeholders in the supplied database cannot establish actual silicon fuse values.
+* This build explicitly clears advertised MVC support and compiles postprocessor connections only for H.264, VP6 and VP8/WebP. The supplied GBATEK reference dump reports effective H.264, VP6 and VP8/WebP support with a 1920-pixel decoder/PP width; MPEG-4 and Sorenson synthesis support is masked off by fuses. This is separate reference evidence, not live state in the database.
 
 ## Reading order
 
@@ -22,5 +22,7 @@ Analysis of the supplied `mvd.i64`, performed on 2026-09-28. Addresses throughou
 7. [Methodology and remaining uncertainties](methodology.md)
 8. [Address-to-name inventory](function-map.md)
 9. [Recovered internal layouts](database-layouts.md) and [register-field inventory](register-fields.md)
+10. [Decoder internals, state and source matches](decoder-internals.md)
+11. [Nintendo DWL/platform adaptations](platform-glue.md)
 
 The source tree is a matching **family/revision reference**, not proof that Nintendo compiled exactly that checkout. Names without an exact upstream counterpart use an `Mvd`/`MVDSTD_` prefix. Source-derived names preserve Hantro spelling. Details that remain uncertain are identified explicitly in the relevant document.

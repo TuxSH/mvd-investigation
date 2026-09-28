@@ -17,7 +17,7 @@ The original database was copied to `/tmp/mvd-re/mvd.before.i64` before edits. T
 7. Inspect disassembly only where decompilation was insufficient: floating-point calling convention, packed work-size controls, configuration cache-size branches, output clearing and bounds, and a missing L2B receive branch
 8. Document source correspondence, complete command-role maps, configuration fields, sizing/results, memory behavior and explicit uncertainty; verify important type sizes in IDA and save the database
 
-The address inventory records 208 applied function names/prototypes. This includes both identified Hantro routines and descriptively named Nintendo/platform wrappers, not 208 proven upstream-source functions. Two auxiliary dispatcher signatures were also refined while preserving their existing names. Eighty local-variable renames succeeded in the main wrapper/transport pass; one obsolete decompiler temporary disappeared after type propagation and was not forced into the stack frame. Additional local naming was adjusted when type propagation changed register reuse.
+The first pass applied 208 names/prototypes; the continuation adds 108, for 316 in the address inventory. This includes both identified Hantro routines and descriptively named Nintendo/platform wrappers, not 316 proven upstream-source functions. Two auxiliary dispatcher signatures were also refined while preserving their existing names. Eighty local-variable renames succeeded in the main wrapper/transport pass; one obsolete decompiler temporary disappeared after type propagation and was not forced into the stack frame. Additional local naming was adjusted when type propagation changed register reuse.
 
 ## Strength of evidence
 
@@ -27,7 +27,7 @@ The address inventory records 208 applied function names/prototypes. This includ
 
 **Source-assisted field names** describe layouts that agree with binary accesses. The recovered public PP configuration is particularly strong: copy size, defaults, validation and hardware setup all corroborate the map. Register names transferred through aligned repeated triples have less independent semantic evidence than an API matched by full behavior; the exact transfer is exposed in the register inventory.
 
-**Not established** includes successful hardware execution, complete codec/profile conformance, physical fuse settings, timing, image quality, and exploitability of unchecked paths. Such claims are deliberately not inferred from a zero-filled hardware segment, a parser accepting headers, or the presence of common register names.
+**Not established** includes successful hardware execution, complete codec/profile conformance, matching fuse settings across console revisions, timing, image quality, and exploitability of unchecked paths. Such claims are deliberately not inferred from a zero-filled hardware segment, a parser accepting headers, or the presence of common register names.
 
 ## Validation performed
 
@@ -38,11 +38,19 @@ The documentation was checked for complete command coverage, internal links and 
 ## Remaining uncertainties
 
 * Exact firmware/build identity and upstream Hantro release
-* Live ASIC ID, synthesis and fuse register values; consequently the exact physically available feature set and decoder width
+* Whether a live console corresponding to this database matches the supplied GBATEK register reference; the conditional feature matrix is now decoded in hardware.md
 * Runtime H.264 profile/bit-depth support, particularly the wiki's High10 claims; the SPS parser reads and discards depth fields
-* Two extra synthesis capability fields and the unused capability word; the extra byte in VP6/VP8 info; reserved PP container scaling fields
+* The unused capability word and extra byte in VP6/VP8 info; H.264 access-unit-boundary storage, a storage extension word and opaque macroblock/slice substructures; VP8 parser/concealment extension words
 * L2B pixel-format ordering and hardware conversion details beyond the recovered register writes and DMA interface
 * Exact origin of every runtime/SDK/internal decoder routine; many functions outside the exposed API and traced helpers remain unnamed
 * Some Hex-Rays artifacts: overlapping packed work-size locals and aliases inside the output mapping array; those were not hidden by inventing a cleaner but unsupported layout
 
-There was no previous analysis file in the repository to reconcile. These files describe the current database evidence. The [3DBrew page](https://www.3dbrew.org/wiki/MVD_Services) provided the starting interface vocabulary; its experimental labels were corrected where source and binary agreed, and unverified hardware claims remain qualified. GBATEK retrieval was attempted but did not provide usable primary-page contents during this pass, so no new conclusions depend on it.
+There was no previous analysis file in the repository to reconcile. These files describe the current database evidence. The [3DBrew page](https://www.3dbrew.org/wiki/MVD_Services) provided the starting interface vocabulary; its experimental labels were corrected where source and binary agreed, and unverified hardware claims remain qualified. GBATEK retrieval did not initially yield usable page contents. The user subsequently supplied a register excerpt; its six read-only words are explicitly recorded as reference evidence and decoded without patching MMIO placeholders.
+
+## Continuation sequence and validation
+
+The continuation analyzed PP scaling and shared PP interfaces, then H.264/VP6/VP8 parser, DPB, ASIC-buffer and state-management helpers. Source record layouts were examined with ARM32/short-enum Clang output, adjusted to binary-observed offsets, and checked in IDA. Explicit padding corrected the local-type parser’s differing alignment of mixed byte/word fields. The PP scaling block is fully named; hardware-error-concealment and stride capability bits are identified by their VP8 consumers.
+
+Register call sites resolved 24 branch-specific fields plus the previously isolated source IRQ bit: 723 names total, seven unresolved. Codec instance, buffer, interface and parser sizes were read back after typing. DWL/platform analysis came last, covering filtered MMIO writes, caller-work-buffer allocation, no-op frees, status/event waits and PP cache flush. Disassembly was used for preserved argument registers, timeout conversion, the address-helper OR condition and syscall identities. Eighteen more platform-local names and four global names were applied.
+
+Important continuation sizes: linear descriptor 12, H.264/VP6/VP8 containers 15860/2424/4224, H.264 DPB 1680, VP6 parser 1480, VP8 parser 2612, VP8 ASIC state 812, reference-buffer controller 228, shared decoder-to-PP interface 104, fuse status 76. All 316 inventory names were checked against their database addresses. The decompiler cache was invalidated for all 797 functions; fresh pseudocode confirmed the register-preservation corrections in the MMIO writer and PP cache helper, and propagated stack types in PP initialization and capability decoding. Interior-pointer aliases and the packed-local artifacts noted above remain. No firmware instructions, MMIO contents or reference-source files were changed.
